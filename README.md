@@ -1,6 +1,6 @@
 <h1 align = "center"> <i> Simulacron </i>  </h1>
 
-<h3 align = "center"> Description: </h3>
+<h2 align = "center"> Description: </h2>
 
 The impetus for this project was a singular concept: *__spherical objects in a zero-g enviroment attracting and repelling each other.__* <br>
 This concept was then expanded upon to consider multiple types of objects, enviroments, forces, and obstacles. Thus the need for a complex
@@ -18,5 +18,6 @@ the fundamentals of good software design such as:
 
 
 
-<h3 align = "center"> Project Info   </h3>
-   * Author
+<h2 align = "center"> Project Info   </h2>
+
+   - Author
