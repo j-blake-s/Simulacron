@@ -280,11 +280,7 @@ public class ManualCameraRig extends CameraRig {
 
   // Implement abstract method from CameraRig
   public boolean move() {
-    PVector temp = eye();
-
-    temp.set(temp.x+5,temp.y,temp.z);
-
-    eye(temp);
+    // Do nothing
     return true;
   }
 }
