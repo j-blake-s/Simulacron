@@ -1,6 +1,6 @@
 <h1 align = "center"> <i> Simulacron </i>  </h1>
 
-The impetus for this project was a singular concept: *__spherical objects in a zero-g enviroment attracting and repelling each other.__* <br>
+The impetus for this project was a singular concept: *__spherical objects in a zero-g enviroment attracting and repelling each other.__* <br><br>
 This concept was then expanded upon to consider multiple types of objects, enviroments, forces, and obstacles. Thus the need for a complex
 and detailed program which could handle that level of variety. The end goal is to create beautiful scenarios, using the laws of physics and 
 color overlays. Thus the mission of this project is two-fold, __*accurate physics simulations and pretty visuals*__.
