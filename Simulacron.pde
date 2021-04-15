@@ -1,10 +1,11 @@
 CameraRig rig;
+float count = 0;
 void setup() {
   fullScreen(P3D);
   smooth(8);
 
-  PVector eye = new PVector(0,0,0);
-  PVector center = new PVector(width/2,height/2,500);
+  PVector eye = new PVector(0,-200,200);
+  PVector center = new PVector(0,0,0);
   PVector up = new PVector(0,-1,0);
   rig = new ManualCameraRig(eye,center,up);
   background(0);
@@ -18,10 +19,14 @@ void draw() {
   // Let's create a room
   stroke(255);
   noFill();
-  box(width,height,1000);
+  sphere(100);
 
+  beginCamera();
   rig.film();
-  rig.move();
+  rotateX(count);
+  count += 0.1;
+  endCamera();
+
   
 }
 

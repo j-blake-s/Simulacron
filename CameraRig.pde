@@ -2,7 +2,7 @@ public abstract class CameraRig {
 
   protected PVector e = new PVector(0,0,0);
   protected PVector c = new PVector(0,0,0);
-  protected PVector u = new PVector(0,1,0);
+  protected PVector u = new PVector(0,-1,0);
   protected Camera cam = null;
 
 

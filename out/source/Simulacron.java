@@ -15,12 +15,13 @@ import java.io.IOException;
 public class Simulacron extends PApplet {
 
 CameraRig rig;
+float count = 0;
 public void setup() {
   
   
 
-  PVector eye = new PVector(0,0,0);
-  PVector center = new PVector(width/2,height/2,500);
+  PVector eye = new PVector(0,-200,200);
+  PVector center = new PVector(0,0,0);
   PVector up = new PVector(0,-1,0);
   rig = new ManualCameraRig(eye,center,up);
   background(0);
@@ -34,10 +35,14 @@ public void draw() {
   // Let's create a room
   stroke(255);
   noFill();
-  box(width,height,1000);
+  sphere(100);
 
+  beginCamera();
   rig.film();
-  rig.move();
+  rotateX(count);
+  count += 0.1f;
+  endCamera();
+
   
 }
 
@@ -117,7 +122,7 @@ public abstract class CameraRig {
 
   protected PVector e = new PVector(0,0,0);
   protected PVector c = new PVector(0,0,0);
-  protected PVector u = new PVector(0,1,0);
+  protected PVector u = new PVector(0,-1,0);
   protected Camera cam = null;
 
 
