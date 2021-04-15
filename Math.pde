@@ -2,7 +2,7 @@ static class Math {
   static class CamMath {
     
     static PVector moveEye(Camera cam, PVector direction) {
-      
+      /*
       float dv = 0.02; 
       
       //Get copies
@@ -27,6 +27,8 @@ static class Math {
       eye.mult(radius); //Return the eye to the initial radius
       eye = eye.add(center); //Return eye to absolute position
       return eye;
+    */
+    return null;
     }
     
   }

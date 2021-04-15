@@ -14,30 +14,30 @@ import java.io.IOException;
 
 public class Simulacron extends PApplet {
 
-Enviroment env = new Enviroment();
-float[] eye =  {width/2 , height/2 , 400};
-float[] center = {width/2 , height/2 , 0};
-float[] up = {0,1,0};
-
-Camera cam_ = new Camera( eye , center , up);
-Camera cam = new CameraController(cam_,env);
-
+CameraRig rig;
 public void setup() {
   
+  
+
+  PVector eye = new PVector(0,0,0);
+  PVector center = new PVector(width/2,height/2,500);
+  PVector up = new PVector(0,-1,0);
+  rig = new ManualCameraRig(eye,center,up);
   background(0);
   frameRate(60);
-  
-  
 }
 
 public void draw() {
-  
-  env.clear();
+
+  background(0);
+
+  // Let's create a room
   stroke(255);
   noFill();
-  box(90);
-  box(100);
-  env.draw();
+  box(width,height,1000);
+
+  rig.film();
+  rig.move();
   
 }
 
@@ -47,192 +47,182 @@ public void keyPressed() {
 public void keyReleased() {
   handleKeyPress(keyCode,false);
 }
-
+/**
+ *-> Faciliatates use of the camera function.
+ *-> Keeps track of position, direction, and orientation.
+ *
+ * @author: Blake Seekings
+ * @DoC:    4/15/2021
+*/
 class Camera {
   
-  PVector up;
-  PVector eye;
-  PVector center;
+  private PVector u;
+  private PVector e;
+  private PVector c;
+  private boolean on = true;
   
 
   Camera() {
-    //this.init([0,1,0],[50,50,0],[0,1,0]);
+    this.u = new PVector(0,-1,0);
+    this.e = new PVector(0,0,0);
+    this.c = new PVector(0,0,0);
   }
-  
- 
-  Camera(float[] eye_, float[] center_, float[] up_ ) {
-    this.init(eye_,center_,up_);
-  }
-  
- 
-  private void init(float[] eye_, float[] center_, float[] up_ ) {
-    PVector e = new PVector(eye_[0],eye_[1],eye_[2]);
-    PVector c = new PVector(center_[0],center_[1],center_[2]);
-    PVector u = new PVector(up_[0],up_[1],up_[2]);
-    
-    
-    this.eye = e;
-    this.center = c;
-    this.up = u;
-  }
-  
 
-  public void film() {
-    camera(eye.x,eye.y,eye.z,center.x,center.y,center.z,up.x,up.y,up.z);
+  Camera(PVector eye, PVector center, PVector up) {
+    this.u = up;
+    this.e = eye;
+    this.c = center;
   }
   
   
-
-  public void setUp(PVector up_) {
-    this.up = up_;
-  } 
-
-  public PVector getUp() {
-    return this.up;
+  // Film
+  public boolean film() {
+    if (!is_on())
+      return false;
+    camera(e.x,e.y,e.z,c.x,c.y,c.z,u.x,u.y,u.z);
+    return true;
   }
- 
+  public boolean film(PVector eye_,PVector center_,PVector up_) {
+    if (!is_on())
+      return false;
+    camera(eye_.x,eye_.y,eye_.z,center_.x,center_.y,center_.z,up_.x,up_.y,up_.z);
+    return true;
+  }
+  
 
-
-  public void setEye(PVector eye_) {
-    this.eye = eye_;
+  // On/Off
+  public boolean power() {
+    on = !on;
+    return on;
+  }
+  public boolean is_on() {
+    return on;
   }
 
-  public PVector getEye() {
-    return this.eye;
-  }
+  // Up
+  public PVector up(PVector up_) { this.u = up_; return this.u; } 
+  public PVector up() { return this.u; }
 
-
-
-  public void setCenter(PVector center_) {
-    this.center = center_;
-  }
-
-  public PVector getCenter() {
-    return this.center;
-  }
+  // Eye
+  public PVector eye(PVector eye_) { this.e = eye_;return this.e; }
+  public PVector eye() { return this.e; }
+  
+  // Center
+  public PVector center(PVector center_) { this.c = center_; return this.c; }
+  public PVector center() { return this.c; }
   
   
 }
+public abstract class CameraRig {
+
+  protected PVector e = new PVector(0,0,0);
+  protected PVector c = new PVector(0,0,0);
+  protected PVector u = new PVector(0,1,0);
+  protected Camera cam = null;
 
 
-class CameraController extends CameraWrapper {
+  private final String DEF_ATTACH_MODE = "cam_snap";
+  private final boolean DEF_REPLACE = false;
 
-  Enviroment env;
-  CameraController(Camera cam_,Enviroment env_) {
-     super(cam_);
-     this.env = env_;
-     this.env.cam = this;
-    
+  // Moves the camera according to some function
+  public abstract boolean move();
+
+  // Films the camera
+  public boolean film() {
+    if (cam != null)
+      return cam.film();
+    return false;
   }
-   
-  public void film() {
-    this.update();
-    super.film();
-  }
 
-  //Update the camera after every update cycle
-  //Uses https://keycode.info/ for key info
-  private void update() {
-     
-
-  
-
-    HashMap<Integer,Boolean> keys = this.env.getUserInput();
-     
-    // If keys is null, then user input is not being allowed
-    if (keys == null) {
-      return;
-    } 
-
-    //Othewise check user input
-    else {
-      this.updateEye(keys);
-      this.updateCenter(keys);
-      this.updateUp(keys);
-    }
-  }
-  private void updateEye(HashMap<Integer,Boolean> keyMap) {
-
-    PVector eyeDirection = new PVector(0,0);
-  
-    if (keyMap == null)
-      return;
-      
-   
-    //Checking keys
-    if (keyMap.containsKey(37) && keyMap.get(37) == true) { // Left Arrow
-      eyeDirection.x -= 1;
-    }
-
-    if (keyMap.containsKey(38) && keyMap.get(38) == true) { //Up Arrow
-      eyeDirection.y -= 1;
-    }
-
-    if (keyMap.containsKey(39) && keyMap.get(39) == true) { //Right Arrow
-      eyeDirection.x += 1;
-    }
-
-    if (keyMap.containsKey(40) && keyMap.get(40) == true) { //Down Arrow
-      eyeDirection.y += 1;
-    }
-
-    super.setEye(Math.CamMath.moveEye(super.cam, eyeDirection));
-
-  }
-  private void updateCenter(HashMap<Integer,Boolean> keyMap){
-    return;
-  }
-  private void updateUp(HashMap<Integer,Boolean> keyMap) {
-    return;
+  // Set current camera to null and returns what was attached.
+  public Camera detach() {
+    Camera temp = cam;
+    cam = null;
+    return temp;
   }
 
   
-
-}
-
-class CameraWrapper extends Camera {
-
-  Camera cam;
-
-  CameraWrapper(Camera cam_) {
-    this.cam = cam_;
+  public boolean attach(Camera cam_) {
+    return this.attach(cam_,DEF_ATTACH_MODE);
   }
 
-  public void film() {
-    this.cam.film();
+  public boolean attach(Camera cam_, String attach_mode) {
+    return this.attach(cam_,attach_mode,DEF_REPLACE);
   }
   
+  // Attaches the a camera to this rig, if possible.
+  public boolean attach(Camera cam_, String attach_mode, boolean replace) {
+
+    if (!replace && this.cam != null)
+      return false;
+
+    switch (attach_mode) {
+
+      // Rig snaps to camera position
+      case "rig_snap":
+        cam = cam_;
+        rig_snap();
+        return true;
+
+      // Camera snaps to rig position
+      case "cam_snap":
+        cam = cam_;
+        cam_snap();
+        return true;
+
+      // Incorrect mode
+      default:
+        println("Invalid attach mode!");
+        return false;
+    }
+  }
 
 
 
-  public void setUp(PVector up_) {
-    this.cam.up = up_;
+  // Snaps the rig to the camera's position
+  private void rig_snap() {
+    eye(cam.eye());
+    center(cam.center());
+    up(cam.up());
+  }
+
+  // Snaps the camera to the rig's position
+  private void cam_snap() {
+    cam.eye(eye());
+    cam.center(center());
+    cam.up(up());
+  }
+
+  // Up
+  public PVector up(){ return this.u; }
+  public PVector up(PVector up_) {
+    this.u=up_;
+    if (cam != null)
+      cam.up(up());
+
+    return up();
   } 
 
-  public PVector getUp() {
-    return this.cam.up;
+  // Eye
+  public PVector eye(){ return this.e; }
+  public PVector eye(PVector eye_) {
+    this.e=eye_;
+    if (cam != null)
+      cam.eye(eye());
+
+    return eye();
   }
- 
+  
+  
+  // Center
+  public PVector center(){ return this.c; }
+  public PVector center(PVector center_) {
+    this.c = center_;
+    if (cam != null)
+      cam.center(center());
 
-
-  public void setEye(PVector eye_) {
-    this.cam.eye = eye_;
-  }
-
-  public PVector getEye() {
-    return this.cam.eye;
-  }
-
-
-
-  public void setCenter(PVector center_) {
-    this.cam.center = center_;
-  }
-
-  public PVector getCenter() {
-    return this.cam.center;
-  }
-
+    return this.c;
+  } 
 }
 HashMap<Integer,Boolean> keys = new HashMap<Integer,Boolean>();
 
@@ -246,26 +236,15 @@ public void handleKeyPress(int keycode,Boolean pressed) {
 
 class Enviroment {
   
-  Camera cam;
-  Enviroment() {
+  private CameraRig rig;
+  public Enviroment() {
+    rig = new ManualCameraRig();
   }
 
-  // Clear the enviroment 
-  public void clear() {
-    background(0);
+  public Enviroment(CameraRig c) {
+    rig = c;
   }
 
-  // Draw the enviroment state
-  public void draw() {
-    // Stage Camera
-    this.film();
-  }
-
-
-  public void film() {
-    this.cam.film();
-  }
-  
 
   public HashMap<Integer,Boolean> getUserInput() {
     if (this.allowsUserInput()) {
@@ -279,12 +258,37 @@ class Enviroment {
     return true;
   }
 }
+public class ManualCameraRig extends CameraRig {
+
+  // Default Constructor
+  public ManualCameraRig() {
+    attach(new Camera());
+  }
+
+  public ManualCameraRig(PVector eye_,PVector center_,PVector up_) {
+    eye(eye_);
+    center(center_);
+    up(up_);
+    attach(new Camera());
+
+  }
+
+  // Implement abstract method from CameraRig
+  public boolean move() {
+    PVector temp = eye();
+
+    temp.set(temp.x+5,temp.y,temp.z);
+
+    eye(temp);
+    return true;
+  }
+}
 static class Math {
   static class CamMath {
     
     public static PVector moveEye(Camera cam, PVector direction) {
-      
-      float dv = 0.02f; 
+      /*
+      float dv = 0.02; 
       
       //Get copies
       PVector eye = cam.getEye().copy();
@@ -308,6 +312,8 @@ static class Math {
       eye.mult(radius); //Return the eye to the initial radius
       eye = eye.add(center); //Return eye to absolute position
       return eye;
+    */
+    return null;
     }
     
   }

@@ -10,26 +10,15 @@ void handleKeyPress(int keycode,Boolean pressed) {
 
 class Enviroment {
   
-  Camera cam;
-  Enviroment() {
+  private CameraRig rig;
+  public Enviroment() {
+    rig = new ManualCameraRig();
   }
 
-  // Clear the enviroment 
-  void clear() {
-    background(0);
+  public Enviroment(CameraRig c) {
+    rig = c;
   }
 
-  // Draw the enviroment state
-  void draw() {
-    // Stage Camera
-    this.film();
-  }
-
-
-  void film() {
-    this.cam.film();
-  }
-  
 
   HashMap<Integer,Boolean> getUserInput() {
     if (this.allowsUserInput()) {
