@@ -15,12 +15,13 @@ void setup() {
 }
 
 void draw() {
-  background(0);
+  
+  env.clear();
   stroke(255);
   noFill();
   box(90);
   box(100);
-  env.film();
+  env.draw();
   
 }
 

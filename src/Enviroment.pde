@@ -13,11 +13,24 @@ class Enviroment {
   Camera cam;
   Enviroment() {
   }
-  
+
+  // Clear the enviroment 
+  void clear() {
+    background(0);
+  }
+
+  // Draw the enviroment state
+  void draw() {
+    // Stage Camera
+    this.film();
+  }
+
+
   void film() {
     this.cam.film();
   }
   
+
   HashMap<Integer,Boolean> getUserInput() {
     if (this.allowsUserInput()) {
       return keys;
