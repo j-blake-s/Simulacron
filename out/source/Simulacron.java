@@ -14,44 +14,23 @@ import java.io.IOException;
 
 public class Simulacron extends PApplet {
 
-CameraRig rig;
-float count = 0;
+Enviroment env;
 public void setup() {
   
   
-
-  PVector eye = new PVector(0,-200,200);
-  PVector center = new PVector(0,0,0);
-  PVector up = new PVector(0,-1,0);
-  rig = new ManualCameraRig(eye,center,up);
   background(0);
   frameRate(60);
+
+  env = new Enviroment();
 }
 
 public void draw() {
 
-  background(0);
+  env.clear();
+  env.film();
 
-  // Let's create a room
-  stroke(255);
-  noFill();
-  sphere(100);
-
-  beginCamera();
-  rig.film();
-  rotateX(count);
-  count += 0.1f;
-  endCamera();
-
-  
 }
 
-public void keyPressed() {
-  handleKeyPress(keyCode,true);
-}
-public void keyReleased() {
-  handleKeyPress(keyCode,false);
-}
 /**
  *-> Faciliatates use of the camera function.
  *-> Keeps track of position, direction, and orientation.
@@ -229,60 +208,167 @@ public abstract class CameraRig {
     return this.c;
   } 
 }
-HashMap<Integer,Boolean> keys = new HashMap<Integer,Boolean>();
-
-public void handleKeyPress(int keycode,Boolean pressed) {
-  switch (keycode){
-    default:
-      keys.put(keycode,pressed);
-      break;
-  }
-}
-
 class Enviroment {
   
   private CameraRig rig;
   public Enviroment() {
-    rig = new ManualCameraRig();
+    PVector eye = new PVector(100,100,100);
+    rig = new FreeCameraRig(eye);
+    rig.center(new PVector(0,0,0));
   }
 
   public Enviroment(CameraRig c) {
     rig = c;
   }
 
+  public void clear() {
+    background(0);
+    drawFloorGrid();
+    drawCenterAxis();
+  }
 
-  public HashMap<Integer,Boolean> getUserInput() {
-    if (this.allowsUserInput()) {
-      return keys;
-    } else {
-      return null;
+  public void film() {
+    rig.move();
+    rig.film();
+  }
+
+  public void drawFloorGrid() {
+    int y = 0;
+    int base = 8000;
+    int grain = 400;
+
+    noFill();
+    stroke(255);
+    for (int i = -base; i < base; i += grain) {
+      line(i,y,-base,i,y,base);
+      line(-base,y,i,base,y,i);
     }
   }
+
+
+  public void drawCenterAxis() {
+    // (0,0,0)
+
+    noFill();
+
+    stroke(255,0,0); // RED
+    line(0,0,0,0,50,0); // +Y-axis
+    
+    stroke(0,255,0); // GREEN
+    line(0,0,0,50,0,0); // X-axis
+ 
+    stroke(0,0,255); // BLUE
+    line(0,0,0,0,0,50);
   
-  private Boolean allowsUserInput() {
-    return true;
+    fill(255);
+    draw_sphere(2,0,50,0);
+    draw_sphere(2,50,0,0);
+    draw_sphere(2,0,0,50);
+  }
+
+
+  private void draw_sphere(int r, float x, float y, float z) {
+    pushMatrix();
+    translate(x,y,z);
+    noStroke();
+    sphere(r);
+    popMatrix();
   }
 }
-public class ManualCameraRig extends CameraRig {
+public class FreeCameraRig extends CameraRig {
 
+  private final PVector DEF_UP = new PVector(0,-1,0);
+  private final PVector DEF_DIR = new PVector(0,0,1);
+  private final PVector DEF_EYE = new PVector(0,0,0);
+
+  
   // Default Constructor
-  public ManualCameraRig() {
-    attach(new Camera());
+  public FreeCameraRig() {
+    init(DEF_EYE,DEF_DIR,DEF_UP);
   }
 
-  public ManualCameraRig(PVector eye_,PVector center_,PVector up_) {
-    eye(eye_);
-    center(center_);
-    up(up_);
-    attach(new Camera());
+  public FreeCameraRig(PVector eye_) {
+    init(eye_,DEF_DIR,DEF_UP);
+  }
+  
+  public FreeCameraRig(PVector eye_,PVector dir) {
+    init(eye_,dir,DEF_UP);
+  }
 
+  public FreeCameraRig(PVector eye_,PVector dir, PVector up_) {
+    init(eye_,dir,up_);
+  }
+
+  public void init(PVector eye_,PVector dir,PVector up_) {
+
+    PVector temp = PVector.add(eye_,dir.normalize());
+    eye(eye_);
+    center(temp);
+    up(up_);
+
+    attach(new Camera());
   }
 
   // Implement abstract method from CameraRig
   public boolean move() {
-    // Do nothing
+
+    int scalar = 2;
+    PVector diff = PVector.sub(center(),eye()).normalize();
+    diff.mult(scalar); // Base vector - has forward direction
+
+    int[] WASD = get_WASD();
+    int[] ULDR = get_ULDR();
+
+    PVector f_b_move = PVector.mult(diff,WASD[0] - WASD[2]); 
+    PVector l_r_move = PVector.mult(diff,WASD[1] - WASD[3]); 
+    int u_d_look = ULDR[0] - ULDR[2];
+    int l_r_look = ULDR[1] - ULDR[3];
+    
+    PVector newEye = eye();
+    PVector newCenter = center();
+    PVector newUp = up();
+
+    newEye.add(f_b_move);
+    newCenter.add(f_b_move);
+
     return true;
+
+    
   }
+
+  public PVector add(PVector t,float a, float b, float c) {
+    return new PVector(t.x+a,t.y+b,t.z+c);
+  }
+}
+HashMap<Integer,Boolean> keys = new HashMap<Integer,Boolean>();
+
+
+public int[] get_ULDR() {
+  int[] temp = {38,37,40,39};
+  return get_keys(temp);
+}
+public int[] get_WASD() {
+  int[] temp = {87,65,83,68};
+  return get_keys(temp);
+}
+public int[] get_keys(int[] key_codes) {
+  
+  int[] temp = new int[key_codes.length];
+  int count = 0;
+  for (int code : key_codes) {
+    if(keys.get(code) == null || keys.get(code) == false)
+      temp[count++] = 0;
+    else
+      temp[count++] = 1; 
+  }
+  return temp;
+}
+
+public void keyPressed() {
+  keys.put(keyCode,true);
+}
+public void keyReleased() {
+  keys.put(keyCode,false);
 }
 static class Math {
   static class CamMath {

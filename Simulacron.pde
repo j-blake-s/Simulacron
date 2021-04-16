@@ -1,19 +1,17 @@
+Enviroment env;
 void setup() {
   fullScreen(P3D);
   smooth(8);
   background(0);
   frameRate(60);
+
+  env = new Enviroment();
 }
 
 void draw() {
 
-  background(0);
+  env.clear();
+  env.film();
 
 }
 
-void keyPressed() {
-  handleKeyPress(keyCode,true);
-}
-void keyReleased() {
-  handleKeyPress(keyCode,false);
-}
