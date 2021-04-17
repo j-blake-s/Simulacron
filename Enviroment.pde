@@ -2,9 +2,9 @@ class Enviroment {
   
   private CameraRig rig;
   public Enviroment() {
-    PVector eye = new PVector(100,100,100);
+    PVector eye = new PVector(300,300,300);
     rig = new FreeCameraRig(eye);
-    rig.center(new PVector(0,0,0));
+    rig.center(new PVector(299,300,299));
   }
 
   public Enviroment(CameraRig c) {
@@ -24,8 +24,8 @@ class Enviroment {
 
   public void drawFloorGrid() {
     int y = 0;
-    int base = 8000;
-    int grain = 400;
+    int base = 2000;
+    int grain = 100;
 
     noFill();
     stroke(255);
@@ -39,21 +39,23 @@ class Enviroment {
   public void drawCenterAxis() {
     // (0,0,0)
 
+    int sphereRadius = 2;
+    int lineLength = 500;
     noFill();
 
     stroke(255,0,0); // RED
-    line(0,0,0,0,50,0); // +Y-axis
+    line(0,0,0,0,lineLength,0); // +Y-axis
     
     stroke(0,255,0); // GREEN
-    line(0,0,0,50,0,0); // X-axis
+    line(0,0,0,lineLength,0,0); // +X-axis
  
     stroke(0,0,255); // BLUE
-    line(0,0,0,0,0,50);
+    line(0,0,0,0,0,lineLength); // +Z-axis
   
     fill(255);
-    draw_sphere(2,0,50,0);
-    draw_sphere(2,50,0,0);
-    draw_sphere(2,0,0,50);
+    draw_sphere(sphereRadius,0,lineLength,0);
+    draw_sphere(sphereRadius,lineLength,0,0);
+    draw_sphere(sphereRadius,0,0,lineLength);
   }
 
 

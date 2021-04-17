@@ -34,31 +34,86 @@ public class FreeCameraRig extends CameraRig {
 
   // Implement abstract method from CameraRig
   public boolean move() {
+    
+    float move_forward = 2;
+    float move_left_right = 2;
 
-    int scalar = 2;
-    PVector diff = PVector.sub(center(),eye()).normalize();
-    diff.mult(scalar); // Base vector - has forward direction
-
+    // WASD key presses
     int[] WASD = get_WASD();
+    int WS = WASD[0] - WASD[2]; // -1 | 0 | 1
+    int AD = WASD[1] - WASD[3]; // -1 | 0 | 1
+
+    // Arrow key presses
     int[] ULDR = get_ULDR();
+    int UD = ULDR[0] - ULDR[2]; // -1 | 0 | 1
+    int LR = ULDR[1] - ULDR[3]; // -1 | 0 | 1
 
-    PVector f_b_move = PVector.mult(diff,WASD[0] - WASD[2]); 
-    PVector l_r_move = PVector.mult(diff,WASD[1] - WASD[3]); 
-    int u_d_look = ULDR[0] - ULDR[2];
-    int l_r_look = ULDR[1] - ULDR[3];
-    
-    PVector newEye = eye();
-    PVector newCenter = center();
-    PVector newUp = up();
 
-    newEye.add(f_b_move);
-    newCenter.add(f_b_move);
+    // Get current values
+    PVector new_eye = eye();
+    PVector new_center = center();
+    PVector new_up = up();
 
+    // Determine forward/backward movement
+    PVector forward = PVector.sub(new_center,new_eye);
+    forward.normalize();
+    forward.mult(move_forward);
+
+
+
+    // Determing left/right movement
+    PVector left = new_up;
+    //left.normalize();
+    left = left.cross(forward);
+    left.normalize();
+    left.mult(move_left_right);
+
+
+
+    // Multiply by key presses for direction
+    forward.mult(WS);
+    left.mult(AD);
+
+    // Accumalate changes
+    PVector change = PVector.add(forward,left);
+
+    // Apply changes
+    new_eye.add(change);
+    new_center.add(change);
+
+    // Make changes
+    eye(new_eye);
+    center(new_center);
+    up(new_up);
+
+    change_view();
     return true;
-
-    
   }
 
+  public void change_view() {
+    // Fix the y position
+    
+    float dir = 1.5;
+    
+    if (mouseX < pmouseX)
+      dir = -dir;
+
+    if (!mouse_is_dragged)
+      dir = 0;
+
+      
+    PVector distance = new PVector(mouseX-pmouseX,mouseY-pmouseY);
+    float amount = distance.mag(); // Should be big
+    PVector max_amount = new PVector(width,height);
+    distance.div(max_amount.mag());
+    println(distance);
+
+    PVector diff = PVector.sub(center(),eye());
+    PVector diff2D = new PVector(diff.x,diff.z);
+    diff2D.rotate(dir*distance.mag());
+    diff = new PVector(diff2D.x,diff.y,diff2D.y);
+    center(PVector.add(eye(),diff));
+  }
   public PVector add(PVector t,float a, float b, float c) {
     return new PVector(t.x+a,t.y+b,t.z+c);
   }

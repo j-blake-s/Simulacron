@@ -212,9 +212,9 @@ class Enviroment {
   
   private CameraRig rig;
   public Enviroment() {
-    PVector eye = new PVector(100,100,100);
+    PVector eye = new PVector(300,300,300);
     rig = new FreeCameraRig(eye);
-    rig.center(new PVector(0,0,0));
+    rig.center(new PVector(299,300,299));
   }
 
   public Enviroment(CameraRig c) {
@@ -234,8 +234,8 @@ class Enviroment {
 
   public void drawFloorGrid() {
     int y = 0;
-    int base = 8000;
-    int grain = 400;
+    int base = 2000;
+    int grain = 100;
 
     noFill();
     stroke(255);
@@ -249,21 +249,23 @@ class Enviroment {
   public void drawCenterAxis() {
     // (0,0,0)
 
+    int sphereRadius = 2;
+    int lineLength = 500;
     noFill();
 
     stroke(255,0,0); // RED
-    line(0,0,0,0,50,0); // +Y-axis
+    line(0,0,0,0,lineLength,0); // +Y-axis
     
     stroke(0,255,0); // GREEN
-    line(0,0,0,50,0,0); // X-axis
+    line(0,0,0,lineLength,0,0); // +X-axis
  
     stroke(0,0,255); // BLUE
-    line(0,0,0,0,0,50);
+    line(0,0,0,0,0,lineLength); // +Z-axis
   
     fill(255);
-    draw_sphere(2,0,50,0);
-    draw_sphere(2,50,0,0);
-    draw_sphere(2,0,0,50);
+    draw_sphere(sphereRadius,0,lineLength,0);
+    draw_sphere(sphereRadius,lineLength,0,0);
+    draw_sphere(sphereRadius,0,0,lineLength);
   }
 
 
@@ -311,37 +313,92 @@ public class FreeCameraRig extends CameraRig {
 
   // Implement abstract method from CameraRig
   public boolean move() {
+    
+    float move_forward = 2;
+    float move_left_right = 2;
 
-    int scalar = 2;
-    PVector diff = PVector.sub(center(),eye()).normalize();
-    diff.mult(scalar); // Base vector - has forward direction
-
+    // WASD key presses
     int[] WASD = get_WASD();
+    int WS = WASD[0] - WASD[2]; // -1 | 0 | 1
+    int AD = WASD[1] - WASD[3]; // -1 | 0 | 1
+
+    // Arrow key presses
     int[] ULDR = get_ULDR();
+    int UD = ULDR[0] - ULDR[2]; // -1 | 0 | 1
+    int LR = ULDR[1] - ULDR[3]; // -1 | 0 | 1
 
-    PVector f_b_move = PVector.mult(diff,WASD[0] - WASD[2]); 
-    PVector l_r_move = PVector.mult(diff,WASD[1] - WASD[3]); 
-    int u_d_look = ULDR[0] - ULDR[2];
-    int l_r_look = ULDR[1] - ULDR[3];
-    
-    PVector newEye = eye();
-    PVector newCenter = center();
-    PVector newUp = up();
 
-    newEye.add(f_b_move);
-    newCenter.add(f_b_move);
+    // Get current values
+    PVector new_eye = eye();
+    PVector new_center = center();
+    PVector new_up = up();
 
+    // Determine forward/backward movement
+    PVector forward = PVector.sub(new_center,new_eye);
+    forward.normalize();
+    forward.mult(move_forward);
+
+
+
+    // Determing left/right movement
+    PVector left = new_up;
+    //left.normalize();
+    left = left.cross(forward);
+    left.normalize();
+    left.mult(move_left_right);
+
+
+
+    // Multiply by key presses for direction
+    forward.mult(WS);
+    left.mult(AD);
+
+    // Accumalate changes
+    PVector change = PVector.add(forward,left);
+
+    // Apply changes
+    new_eye.add(change);
+    new_center.add(change);
+
+    // Make changes
+    eye(new_eye);
+    center(new_center);
+    up(new_up);
+
+    change_view();
     return true;
-
-    
   }
 
+  public void change_view() {
+    // Fix the y position
+    
+    float dir = 1.5f;
+    
+    if (mouseX < pmouseX)
+      dir = -dir;
+
+    if (!mouse_is_dragged)
+      dir = 0;
+
+      
+    PVector distance = new PVector(mouseX-pmouseX,mouseY-pmouseY);
+    float amount = distance.mag(); // Should be big
+    PVector max_amount = new PVector(width,height);
+    distance.div(max_amount.mag());
+    println(distance);
+
+    PVector diff = PVector.sub(center(),eye());
+    PVector diff2D = new PVector(diff.x,diff.z);
+    diff2D.rotate(dir*distance.mag());
+    diff = new PVector(diff2D.x,diff.y,diff2D.y);
+    center(PVector.add(eye(),diff));
+  }
   public PVector add(PVector t,float a, float b, float c) {
     return new PVector(t.x+a,t.y+b,t.z+c);
   }
 }
 HashMap<Integer,Boolean> keys = new HashMap<Integer,Boolean>();
-
+boolean mouse_is_dragged = false;
 
 public int[] get_ULDR() {
   int[] temp = {38,37,40,39};
@@ -362,6 +419,15 @@ public int[] get_keys(int[] key_codes) {
       temp[count++] = 1; 
   }
   return temp;
+}
+
+
+public void mouseDragged() {
+  mouse_is_dragged = true;
+}
+
+public void mouseReleased() {
+  mouse_is_dragged = false;
 }
 
 public void keyPressed() {

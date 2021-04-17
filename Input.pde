@@ -1,5 +1,5 @@
 HashMap<Integer,Boolean> keys = new HashMap<Integer,Boolean>();
-
+boolean mouse_is_dragged = false;
 
 public int[] get_ULDR() {
   int[] temp = {38,37,40,39};
@@ -20,6 +20,15 @@ public int[] get_keys(int[] key_codes) {
       temp[count++] = 1; 
   }
   return temp;
+}
+
+
+public void mouseDragged() {
+  mouse_is_dragged = true;
+}
+
+public void mouseReleased() {
+  mouse_is_dragged = false;
 }
 
 public void keyPressed() {
