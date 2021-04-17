@@ -314,18 +314,16 @@ public class FreeCameraRig extends CameraRig {
   // Implement abstract method from CameraRig
   public boolean move() {
     
-    float move_forward = 2;
-    float move_left_right = 2;
+    float move_forward = 5;
+    float move_left_right = 5;
+    float move_up_speed = 5;
 
     // WASD key presses
     int[] WASD = get_WASD();
     int WS = WASD[0] - WASD[2]; // -1 | 0 | 1
     int AD = WASD[1] - WASD[3]; // -1 | 0 | 1
 
-    // Arrow key presses
-    int[] ULDR = get_ULDR();
-    int UD = ULDR[0] - ULDR[2]; // -1 | 0 | 1
-    int LR = ULDR[1] - ULDR[3]; // -1 | 0 | 1
+
 
 
     // Get current values
@@ -365,6 +363,14 @@ public class FreeCameraRig extends CameraRig {
     center(new_center);
     up(new_up);
 
+    int[] up_down_keys = {32,17};
+    int[] up_down = get_keys(up_down_keys);
+    int UD = up_down[0] - up_down[1];
+
+    PVector m_u = new PVector(0,move_up_speed*UD,0);
+    eye(PVector.add(eye(),m_u));
+    center(PVector.add(center(),m_u));
+
     change_view();
     return true;
   }
@@ -372,7 +378,7 @@ public class FreeCameraRig extends CameraRig {
   public void change_view() {
     // Fix the y position
     
-    float dir = 1.5f;
+    float dir = 3;
     
     if (mouseX < pmouseX)
       dir = -dir;
