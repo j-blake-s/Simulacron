@@ -23,15 +23,14 @@ class Enviroment {
   }
 
   public void drawFloorGrid() {
-    int y = 0;
     int base = 2000;
     int grain = 100;
 
     noFill();
     stroke(255);
     for (int i = -base; i < base; i += grain) {
-      line(i,y,-base,i,y,base);
-      line(-base,y,i,base,y,i);
+      line(i,floor,-base,i,floor,base);
+      line(-base,floor,i,base,floor,i);
     }
   }
 
