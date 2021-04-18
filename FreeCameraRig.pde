@@ -101,7 +101,7 @@ public class FreeCameraRig extends CameraRig {
     
     float dir = 3;
     
-    if (mouseX < pmouseX)
+    if (mouseX > pmouseX)
       dir = -dir;
 
     if (!mouse_is_dragged)
@@ -112,7 +112,6 @@ public class FreeCameraRig extends CameraRig {
     float amount = distance.mag(); // Should be big
     PVector max_amount = new PVector(width,height);
     distance.div(max_amount.mag());
-    println(distance);
 
     PVector diff = PVector.sub(center(),eye());
     PVector diff2D = new PVector(diff.x,diff.z);

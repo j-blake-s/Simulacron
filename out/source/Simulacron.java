@@ -380,7 +380,7 @@ public class FreeCameraRig extends CameraRig {
     
     float dir = 3;
     
-    if (mouseX < pmouseX)
+    if (mouseX > pmouseX)
       dir = -dir;
 
     if (!mouse_is_dragged)
@@ -391,7 +391,6 @@ public class FreeCameraRig extends CameraRig {
     float amount = distance.mag(); // Should be big
     PVector max_amount = new PVector(width,height);
     distance.div(max_amount.mag());
-    println(distance);
 
     PVector diff = PVector.sub(center(),eye());
     PVector diff2D = new PVector(diff.x,diff.z);
@@ -476,6 +475,25 @@ static class Math {
     }
     
   }
+}
+public interface PObject {
+  
+  public PVector get_pos();
+  public PVector set_pos();
+
+  public PVector get_vel();
+  public PVector set_vel();
+  
+  public PVector get_acc();
+  public PVector set_acc();
+  
+  public PVector get_mass();
+  public PVector set_mass();
+
+  public void draw();
+  public void show();
+  public void hide();
+
 }
   public void settings() {  fullScreen(P3D);  smooth(8); }
   static public void main(String[] passedArgs) {
