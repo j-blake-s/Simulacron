@@ -9,7 +9,7 @@ public interface PObject {
   public PVector get_acc();
   public PVector set_acc(PVector vector);
   
-  public PVector get_mass();
-  public PVector set_mass(PVector vector);
+  public float get_mass();
+  public float set_mass(float f);
 
 }
