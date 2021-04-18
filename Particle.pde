@@ -1,17 +1,15 @@
 public abstract class Particle implements Drawable {
 
-  private PVector pos;
-  private PVector vel;
-  private PVector acc;
-  private float mass;
+  protected PVector pos;
+  protected PVector vel;
+  protected PVector acc;
+  protected float mass;
   
   
-  private boolean hidden;
+  protected boolean hidden;
 
-  private PVector stroke;
-  private PVector fill;
-
-  private Drawable imposed = null;
+  protected PVector stroke;
+  protected PVector fill;
 
 
   /**
@@ -56,6 +54,12 @@ public abstract class Particle implements Drawable {
   public float setMass(float f) {
     this.mass = f;
     return this.mass;
+  }
+
+  public void update() {
+    vel.add(acc);
+    pos.add(vel);
+    acc.set(0,0,0);
   }
 
   public void shadow(PObject obj) {
@@ -113,6 +117,7 @@ public abstract class Particle implements Drawable {
     */
   PVector setStroke(int b_w) {
     stroke = new PVector(b_w,b_w,b_w);
+    return stroke;
   }
   
   /**
@@ -120,6 +125,7 @@ public abstract class Particle implements Drawable {
     */
   PVector setStroke(int r, int g, int b) {
     stroke = new PVector(r,g,b);
+    return stroke;
   }
 
   PVector getStroke() {
@@ -138,6 +144,7 @@ public abstract class Particle implements Drawable {
     */
   PVector setFill(int b_w) {
     fill = new PVector(b_w,b_w,b_w);
+    return fill;
   }
 
   /**
@@ -145,10 +152,13 @@ public abstract class Particle implements Drawable {
     */
   PVector setFill(int r, int g, int b) {
     fill = new PVector(r,g,b);
+    return fill;
   }
 
   PVector getFill() {
     return this.fill;
   }
+
+  
 
 }

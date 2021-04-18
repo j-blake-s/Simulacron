@@ -9,6 +9,7 @@ public interface PObject {
   public PVector getAcc();
   public PVector setAcc(PVector vector);
   
+  public void update();
 
   public float getMass();
   public float setMass(float f);

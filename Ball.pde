@@ -9,6 +9,9 @@ public class Ball extends Particle {
 
   private int radius;
 
+  public Ball() {
+    this.init(DEF_POS,DEF_VEL,DEF_ACC,DEF_RADIUS,DEF_MASS);
+  }
   public Ball(PVector pos_) {
     this.init(pos_,DEF_VEL,DEF_ACC,DEF_RADIUS,DEF_MASS);
   }
@@ -60,6 +63,26 @@ public class Ball extends Particle {
   }
 
 
-  // Still more to do
+  public void draw() {
+    if (isHidden())
+      return;
+
+    if (stroke.x < 0)
+      noStroke();
+    else 
+      stroke(stroke.x,stroke.y,stroke.z);
+    
+    if (fill.x < 0)
+      noFill();
+    else
+      fill(fill.x,fill.y,fill.z);
+    
+
+    pushMatrix();
+    translate(pos.x,pos.y,pos.z);
+    sphere(radius);
+    popMatrix();
+    
+  }
 
 }

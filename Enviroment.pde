@@ -1,6 +1,8 @@
 class Enviroment {
   
   private CameraRig rig;
+  private final float floor = 0;
+  
   public Enviroment() {
     PVector eye = new PVector(300,300,300);
     rig = new FreeCameraRig(eye);
@@ -20,6 +22,10 @@ class Enviroment {
   public void film() {
     rig.move();
     rig.film();
+  }
+
+  public float floor() {
+    return floor;
   }
 
   public void drawFloorGrid() {

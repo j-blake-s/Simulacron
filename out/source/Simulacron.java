@@ -15,6 +15,7 @@ import java.io.IOException;
 public class Simulacron extends PApplet {
 
 Enviroment env;
+Ball ball;
 public void setup() {
   
   
@@ -22,15 +23,108 @@ public void setup() {
   frameRate(60);
 
   env = new Enviroment();
+  ball = new Ball();
 }
 
 public void draw() {
 
   env.clear();
+  gravity(ball);
+  bounce(env,ball);
+  ball.update();
+  ball.draw();
   env.film();
 
 }
 
+public class Ball extends Particle {
+
+  private final PVector DEF_POS = new PVector(0,0,0);
+  private final PVector DEF_VEL = new PVector(0,0,0);
+  private final PVector DEF_ACC = new PVector(0,0,0);
+  private final float DEF_MASS = 1;
+  private final int DEF_RADIUS = 20;
+
+
+  private int radius;
+
+  public Ball() {
+    this.init(DEF_POS,DEF_VEL,DEF_ACC,DEF_RADIUS,DEF_MASS);
+  }
+  public Ball(PVector pos_) {
+    this.init(pos_,DEF_VEL,DEF_ACC,DEF_RADIUS,DEF_MASS);
+  }
+  public Ball(PVector pos_,float mass_) {
+    this.init(pos_,DEF_VEL,DEF_ACC,DEF_RADIUS,mass_);
+  }
+  public Ball(PVector pos_,PVector vel_) {
+    this.init(pos_,vel_,DEF_ACC,DEF_RADIUS,DEF_MASS);
+  }
+  public Ball(PVector pos_,PVector vel_,float mass_) {
+    this.init(pos_,vel_,DEF_ACC,DEF_RADIUS,mass_);
+  }
+  public Ball(PVector pos_,PVector vel_,PVector acc_) {
+    this.init(pos_,vel_,acc_,DEF_RADIUS,DEF_MASS);
+  }
+  public Ball(PVector pos_,PVector vel_,PVector acc_,float mass_) {
+    this.init(pos_,vel_,acc_,DEF_RADIUS,mass_);
+  }
+
+  public Ball(PVector pos_,int radius_) {
+    this.init(pos_,DEF_VEL,DEF_ACC,radius_,DEF_MASS);
+  }
+  public Ball(PVector pos_,int radius_,float mass_) {
+    this.init(pos_,DEF_VEL,DEF_ACC,radius_,mass_);
+  }
+  public Ball(PVector pos_,PVector vel_,int radius_) {
+    this.init(pos_,vel_,DEF_ACC,radius_,DEF_MASS);
+  }
+  public Ball(PVector pos_,PVector vel_,int radius_,float mass_) {
+    this.init(pos_,vel_,DEF_ACC,radius_,mass_);
+  }
+  public Ball(PVector pos_,PVector vel_,PVector acc_,int radius_) {
+    this.init(pos_,vel_,acc_,radius_,DEF_MASS);
+  }
+  public Ball(PVector pos_,PVector vel_,PVector acc_,int radius_,float mass_) {
+    this.init(pos_,vel_,acc_,radius_,mass_);
+  }
+
+
+
+  private void init(PVector pos_,PVector vel_,PVector acc_,int radius_,float mass_) {
+    this.pos = pos_;
+    this.vel = vel_;
+    this.acc = acc_;
+    this.mass = mass_;
+    this.radius = radius_;
+    this.setStroke(255);
+    this.setNoFill();
+  }
+
+
+  public void draw() {
+    if (isHidden())
+      return;
+
+    if (stroke.x < 0)
+      noStroke();
+    else 
+      stroke(stroke.x,stroke.y,stroke.z);
+    
+    if (fill.x < 0)
+      noFill();
+    else
+      fill(fill.x,fill.y,fill.z);
+    
+
+    pushMatrix();
+    translate(pos.x,pos.y,pos.z);
+    sphere(radius);
+    popMatrix();
+    
+  }
+
+}
 /**
  *-> Faciliatates use of the camera function.
  *-> Keeps track of position, direction, and orientation.
@@ -208,9 +302,64 @@ public abstract class CameraRig {
     return this.c;
   } 
 }
+public interface Drawable extends PObject {
+
+  /**
+    * Draws the object to the canvas
+    */
+  public void draw();
+
+  /**
+    * Brings this object out of hiding and allows it to be drawn to the canvas
+    */
+  public void show();
+
+  /**
+    * Hides this object by not letting it be drawn to the canvas
+    */
+  public void hide();
+
+  /**
+    * Checks whether this object is hidden or not
+    */
+  public boolean isHidden();
+
+  /** 
+    * Disables the stroke feature for this object
+    */
+  public void setNoStroke();
+  
+  /**
+    * Stores the Black White value for use later
+    */
+  public PVector setStroke(int black_white);
+  
+  /**
+    * Stores the RGB value for use later
+    */
+  public PVector setStroke(int r, int g, int b);
+
+  /**
+    * Disables the fill feature for this object
+    */
+  public void setNoFill();
+
+  /**
+    *  Stores the Black White value for use later
+    */
+  public PVector setFill(int black_white);
+
+  /**
+    * Stores the RGB value for use later
+    */
+  public PVector setFill(int r, int g, int b);
+
+}
 class Enviroment {
   
   private CameraRig rig;
+  private final float floor = 0;
+  
   public Enviroment() {
     PVector eye = new PVector(300,300,300);
     rig = new FreeCameraRig(eye);
@@ -232,16 +381,19 @@ class Enviroment {
     rig.film();
   }
 
+  public float floor() {
+    return floor;
+  }
+
   public void drawFloorGrid() {
-    int y = 0;
     int base = 2000;
     int grain = 100;
 
     noFill();
     stroke(255);
     for (int i = -base; i < base; i += grain) {
-      line(i,y,-base,i,y,base);
-      line(-base,y,i,base,y,i);
+      line(i,floor,-base,i,floor,base);
+      line(-base,floor,i,base,floor,i);
     }
   }
 
@@ -476,23 +628,215 @@ static class Math {
     
   }
 }
+
+
+final PVector down = new PVector(0,-1,0);
+final float G = -0.1f;
+
+
+
+public void gravity(PObject obj) {
+  
+  PVector acc = obj.getAcc();
+  acc.add(0,G,0);
+  obj.setAcc(acc);
+
+}
+
+
+public void bounce(Enviroment env, PObject obj) {
+
+  float floor = env.floor();
+  PVector pos = obj.getPos();
+  PVector vel = obj.getVel();
+  PVector acc = obj.getAcc();  
+  // Check floor
+  if (pos.y <= floor)
+    acc.add(0,10,0);
+  
+  obj.setAcc(acc);
+
+  
+}
 public interface PObject {
   
-  public PVector get_pos();
-  public PVector set_pos();
+  public PVector getPos();
+  public PVector setPos(PVector vector);
 
-  public PVector get_vel();
-  public PVector set_vel();
+  public PVector getVel();
+  public PVector setVel(PVector vector);
   
-  public PVector get_acc();
-  public PVector set_acc();
+  public PVector getAcc();
+  public PVector setAcc(PVector vector);
   
-  public PVector get_mass();
-  public PVector set_mass();
+  public void update();
 
-  public void draw();
-  public void show();
-  public void hide();
+  public float getMass();
+  public float setMass(float f);
+
+}
+public abstract class Particle implements Drawable {
+
+  protected PVector pos;
+  protected PVector vel;
+  protected PVector acc;
+  protected float mass;
+  
+  
+  protected boolean hidden;
+
+  protected PVector stroke;
+  protected PVector fill;
+
+
+  /**
+    * Position
+    */
+  public PVector getPos() {
+    return this.pos;
+  }
+  public PVector setPos(PVector vector) {
+    this.pos = vector;
+    return this.pos;
+  }
+
+  /**
+    * Velocity
+    */
+  public PVector getVel() {
+    return this.vel;
+  }
+  public PVector setVel(PVector vector) {
+    this.vel = vector;
+    return this.vel;
+  }
+  
+  /**
+    * Acceleration
+    */
+  public PVector getAcc() {
+    return this.acc;
+  }
+  public PVector setAcc(PVector vector) {
+    this.acc = vector;
+    return this.acc;
+  }
+  
+  /**
+    * Mass
+    */
+  public float getMass() {
+    return this.mass;
+  }
+  public float setMass(float f) {
+    this.mass = f;
+    return this.mass;
+  }
+
+  public void update() {
+    vel.add(acc);
+    pos.add(vel);
+    acc.set(0,0,0);
+  }
+
+  public void shadow(PObject obj) {
+    shiftTo(obj);
+    mimick(obj);
+  }
+  public void become(PObject obj) {
+    shadow(obj);
+    this.mass = obj.getMass();
+  }
+  public void mimick(PObject obj) {
+    this.vel = obj.getVel();
+    this.acc = obj.getAcc();
+  }
+
+  public void shiftTo(PObject obj) {
+    this.pos = obj.getPos();
+  }
+
+   /**
+    * Draws the object to the canvas
+    */
+  public abstract void draw();
+
+  /**
+    * Brings this object out of hiding and allows it to be drawn to the canvas
+    */
+  public void show() {
+    this.hidden = false;
+  }
+
+  /**
+    * Hides this object by not letting it be drawn to the canvas
+    */
+  public void hide() {
+    this.hidden = true;
+  }
+
+  /**
+    * Checks whether this object is hidden or not
+    */
+  public boolean isHidden() {
+    return this.hidden;
+  }
+
+  /** 
+    * Disables the stroke feature for this object
+    */
+  public void setNoStroke() {
+    stroke = new PVector(-1,-1,-1);
+  }
+  
+  /**
+    * Stores the Black White value for use later
+    */
+  public PVector setStroke(int b_w) {
+    stroke = new PVector(b_w,b_w,b_w);
+    return stroke;
+  }
+  
+  /**
+    * Stores the RGB value for use later
+    */
+  public PVector setStroke(int r, int g, int b) {
+    stroke = new PVector(r,g,b);
+    return stroke;
+  }
+
+  public PVector getStroke() {
+    return this.stroke;
+  }
+
+  /**
+    * Disables the fill feature for this object
+    */
+  public void setNoFill() {
+    fill = new PVector(-1,-1,-1);
+  }
+
+  /**
+    *  Stores the Black White value for use later
+    */
+  public PVector setFill(int b_w) {
+    fill = new PVector(b_w,b_w,b_w);
+    return fill;
+  }
+
+  /**
+    * Stores the RGB value for use later
+    */
+  public PVector setFill(int r, int g, int b) {
+    fill = new PVector(r,g,b);
+    return fill;
+  }
+
+  public PVector getFill() {
+    return this.fill;
+  }
+
+  
 
 }
   public void settings() {  fullScreen(P3D);  smooth(8); }
