@@ -1,4 +1,4 @@
-Enviroment env;
+Environment env;
 
 
 void setup() {
@@ -7,13 +7,17 @@ void setup() {
   background(0);
   frameRate(60);
 
-  env = new Enviroment();
+  env = new Environment();
 }
 
 void draw() {
+  p1();
+}
+
+void p1() {
   env.clear();
-  drawFloorGrid(-1,3000,200);
-  drawRoom(0,1500,6000);
+  drawFloorGrid(-1,-1,-1);
+  drawRoom(-1,-1);
   env.film();
 }
 

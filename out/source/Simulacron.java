@@ -14,7 +14,7 @@ import java.io.IOException;
 
 public class Simulacron extends PApplet {
 
-Enviroment env;
+Environment env;
 
 
 public void setup() {
@@ -23,13 +23,17 @@ public void setup() {
   background(0);
   frameRate(60);
 
-  env = new Enviroment();
+  env = new Environment();
 }
 
 public void draw() {
+  p1();
+}
+
+public void p1() {
   env.clear();
-  drawFloorGrid(-1,3000,200);
-  drawRoom(0,1500,6000);
+  drawFloorGrid(-1,-1,-1);
+  drawRoom(-1,-1);
   env.film();
 }
 
@@ -113,10 +117,7 @@ public class Ball extends Particle {
       fill(fill.x,fill.y,fill.z);
     
 
-    pushMatrix();
-    translate(pos.x,pos.y,pos.z);
-    sphere(radius);
-    popMatrix();
+    drawSphere(pos,radius);
     
   }
 
@@ -191,7 +192,7 @@ public abstract class CameraRig {
 
   protected PVector e = new PVector(0,0,0);
   protected PVector c = new PVector(0,0,0);
-  protected PVector u = new PVector(0,-1,0);
+  protected PVector u = GLOBAL_DOWN;
   protected Camera cam = null;
 
 
@@ -200,6 +201,10 @@ public abstract class CameraRig {
 
   // Moves the camera according to some function
   public abstract boolean move();
+
+  // Displays the instructions for the camera to the screen
+  public abstract void instructions();
+
 
   // Films the camera
   public boolean film() {
@@ -351,18 +356,18 @@ public interface Drawable extends PObject {
   public PVector setFill(int r, int g, int b);
 
 }
-class Enviroment {
+class Environment {
   
   private CameraRig rig;
   private final float floor = 0;
   
-  public Enviroment() {
+  public Environment() {
     PVector eye = new PVector(300,300,300);
     rig = new FreeCameraRig(eye);
     rig.center(new PVector(299,300,299));
   }
 
-  public Enviroment(CameraRig c) {
+  public Environment(CameraRig c) {
     rig = c;
   }
 
@@ -373,6 +378,7 @@ class Enviroment {
   public void film() {
     rig.move();
     rig.film();
+    rig.instructions();
   }
 
   public float floor() {
@@ -415,7 +421,11 @@ class Enviroment {
 }
 public class FreeCameraRig extends CameraRig {
 
-  private final PVector DEF_UP = new PVector(0,-1,0);
+  float F_SPEED = 20;
+  float LR_SPEED = 20;
+  float UP_SPEED = 5;
+
+  private final PVector DEF_UP = GLOBAL_DOWN;
   private final PVector DEF_DIR = new PVector(0,0,1);
   private final PVector DEF_EYE = new PVector(0,0,0);
 
@@ -448,11 +458,15 @@ public class FreeCameraRig extends CameraRig {
   }
 
   // Implement abstract method from CameraRig
+  public void instructions() {
+    //textSize(32);
+    //fill(255);
+    //text("Hello",0,0);
+  }
+  // Implement abstract method from CameraRig
   public boolean move() {
     
-    float move_forward = 10;
-    float move_left_right = 10;
-    float move_up_speed = 5;
+
 
     // WASD key presses
     int[] WASD = get_WASD();
@@ -470,7 +484,7 @@ public class FreeCameraRig extends CameraRig {
     // Determine forward/backward movement
     PVector forward = PVector.sub(new_center,new_eye);
     forward.normalize();
-    forward.mult(move_forward);
+    forward.mult(F_SPEED);
 
 
 
@@ -479,7 +493,7 @@ public class FreeCameraRig extends CameraRig {
     //left.normalize();
     left = left.cross(forward);
     left.normalize();
-    left.mult(move_left_right);
+    left.mult(LR_SPEED);
 
 
 
@@ -503,7 +517,7 @@ public class FreeCameraRig extends CameraRig {
     int[] up_down = get_keys(up_down_keys);
     int UD = up_down[0] - up_down[1];
 
-    PVector m_u = new PVector(0,move_up_speed*UD,0);
+    PVector m_u = new PVector(0,UP_SPEED*UD,0);
     eye(PVector.add(eye(),m_u));
     center(PVector.add(center(),m_u));
 
@@ -538,173 +552,12 @@ public class FreeCameraRig extends CameraRig {
     return new PVector(t.x+a,t.y+b,t.z+c);
   }
 }
-/**
-  * Draws a floor grid
-  * @param floorHeight  - Y height of the grid
-  * @param floorSize    - Side length of the grid
-  * @param gridDensity  - Space between each grid line
-  */
-int DEF_FLOOR_HEIGHT = 0;
-int DEF_FLOOR_SIZE = 2000;
-int DEF_GRID_DENSITY = 100;
-public void drawFloorGrid(int floorHeight, int floorSize, int gridDensity) {
-
-  int fh = (floorHeight >= 0) ? floorHeight : DEF_FLOOR_HEIGHT;
-  int fs = (floorSize >= 0) ? floorSize : DEF_FLOOR_SIZE;
-  int gd = (gridDensity >= 0) ? gridDensity : DEF_GRID_DENSITY;
-  
-  noFill();
-  stroke(255);
-
-  for (int i = -fs; i <= fs; i += gd) {
-    line(i,fh,-fs,i,fh,fs);
-    line(-fs,fh,i,fs,fh,i);
-  }
-}
-
-
-
-/**
-  * Draws a room centerd from (0,0,0)
-  * @param floor      - Y height of the room
-  * @param ceiling    - Y height of the ceiling
-  * @param floorSize  - Size of the base of the room
-*/
-public void drawRoom(int floor, int ceiling, int floorSize) {
-  
-  int y1 = floor;
-  int y2 = ceiling;
-
-  int x1 = -floorSize/2;
-  int x2 = floorSize/2;
-
-  int z1 = -floorSize/2;
-  int z2 =floorSize/2; 
-
-  noFill();
-  stroke(255);
-
-  // Lines from (x1,y1,z1)
-  line(x1,y1,z1,x2,y1,z1);
-  line(x1,y1,z1,x1,y1,z2);
-  line(x1,y1,z1,x1,y2,z1);
-
-  // Lines from (x2,y1,z2)
-  line(x2,y1,z2,x1,y1,z2);
-  line(x2,y1,z2,x2,y2,z2);
-  line(x2,y1,z2,x2,y1,z1);
-
-  // Lines from (x2,y2,z1)
-  line(x2,y2,z1,x2,y1,z1);
-  line(x2,y2,z1,x2,y2,z2);
-  line(x2,y2,z1,x1,y2,z1);
-
-
-  // Lines from (x1,y2,z2)
-  line(x1,y2,z2,x1,y1,z2);
-  line(x1,y2,z2,x1,y2,z1);
-  line(x1,y2,z2,x2,y2,z2);
-
-
-
-  
-}
-
-HashMap<Integer,Boolean> keys = new HashMap<Integer,Boolean>();
-boolean mouse_is_dragged = false;
-
-public int[] get_ULDR() {
-  int[] temp = {38,37,40,39};
-  return get_keys(temp);
-}
-public int[] get_WASD() {
-  int[] temp = {87,65,83,68};
-  return get_keys(temp);
-}
-public int[] get_keys(int[] key_codes) {
-  
-  int[] temp = new int[key_codes.length];
-  int count = 0;
-  for (int code : key_codes) {
-    if(keys.get(code) == null || keys.get(code) == false)
-      temp[count++] = 0;
-    else
-      temp[count++] = 1; 
-  }
-  return temp;
-}
-
-
-public void mouseDragged() {
-  mouse_is_dragged = true;
-}
-
-public void mouseReleased() {
-  mouse_is_dragged = false;
-}
-
-public void keyPressed() {
-  keys.put(keyCode,true);
-}
-public void keyReleased() {
-  keys.put(keyCode,false);
-}
-static class Math {
-  static class CamMath {
-    
-    public static PVector moveEye(Camera cam, PVector direction) {
-      /*
-      float dv = 0.02; 
-      
-      //Get copies
-      PVector eye = cam.getEye().copy();
-      PVector center = cam.getCenter().copy();
-      //PVector up = cam.getUp().copy();
-
-      eye = eye.sub(center); //Get eye relative to center
-      float radius = eye.mag(); //Store the initial radius of the eye
-      eye.normalize();
-      
-      PVector zAxis = new PVector(0,1); //TODO - Changeable: zAxis.z -> -1
-      PVector xz = new PVector(eye.x,eye.z);
-      float a = PVector.angleBetween(xz,zAxis);
-      xz.rotate(a); //Get xz to zAxis
-      PVector temp = new PVector(eye.y,xz.y); //TODO - Changeable: Switch values
-      temp.rotate(dv*direction.y);
-      xz = new PVector(0,temp.y);
-      xz.rotate(-a + dv*direction.x);
-
-      eye = new PVector(xz.x,temp.x,xz.y);
-      eye.mult(radius); //Return the eye to the initial radius
-      eye = eye.add(center); //Return eye to absolute position
-      return eye;
-    */
-    return null;
-    }
-    
-  }
-}
-final PVector down = new PVector(0,-1,0);
-final float G = -0.1f;
-
 public void gravity(PObject obj) {
   
+  PVector grav = PVector.mult(GLOBAL_DOWN,GLOBAL_G);
   PVector acc = obj.getAcc();
-  acc.add(0,G,0);
+  acc.add(grav);
   obj.setAcc(acc);
-}
-
-public void bounce(Enviroment env, PObject obj) {
-
-  float floor = env.floor();
-  PVector pos = obj.getPos();
-  PVector vel = obj.getVel();
-  PVector acc = obj.getAcc();  
-  // Check floor
-  if (pos.y <= floor)
-    acc.add(0,10,0);
-  
-  obj.setAcc(acc);  
 }
 public interface PObject {
   
@@ -887,6 +740,148 @@ public abstract class Particle implements Drawable {
   
 
 }
+/**
+  * Draws a floor grid
+  * @param floorHeight  - Y height of the grid
+  * @param floorSize    - Side length of the grid
+  * @param gridDensity  - Space between each grid line
+  */
+int DEF_FLOOR_HEIGHT = 0;
+int DEF_FLOOR_SIZE = 3000;
+int DEF_GRID_DENSITY = 200;
+public void drawFloorGrid(int floorHeight, int floorSize, int gridDensity) {
+
+  int fh = (floorHeight >= 0) ? floorHeight : DEF_FLOOR_HEIGHT;
+  int fs = (floorSize >= 0) ? floorSize : DEF_FLOOR_SIZE;
+  int gd = (gridDensity >= 0) ? gridDensity : DEF_GRID_DENSITY;
+  
+  noFill();
+  stroke(255);
+
+  for (int i = -fs; i <= fs; i += gd) {
+    line(i,fh,-fs,i,fh,fs);
+    line(-fs,fh,i,fs,fh,i);
+  }
+}
+
+
+
+/**
+  * Draws a room centerd from (0,0,0)
+  * @param ceiling    - Y height of the ceiling
+  * @param floorSize  - Size of the base of the room
+*/
+float DEF_ROOM_HEIGHT_ = 1500;
+float DEF_ROOM_BASE = 6000;
+public void drawRoom(float height_, float base) {
+
+  float h = (height_ > 0) ? height_ : DEF_ROOM_HEIGHT_;
+  float b = (base/2 > 0) ? base/2 : DEF_ROOM_BASE/2;
+  float m = h/2;
+
+  PVector template = new PVector(-b,-m,-b);
+
+  // Generate 4 points
+  for (int i = 0; i < 2;++i) {
+    for (int j = 0; j < 2;++j) {
+
+      PVector lmask = new PVector(i,(j+i)%2,j);
+      PVector from = negate(template,lmask);
+
+      // For each point, generate 3 more points 
+      int[] temp = new int[]{0,0,0};
+      for (int k = 0;k < 3;++k) {
+        
+        temp[k] = 1;
+        PVector rmask = new PVector(temp[0],temp[1],temp[2]);
+        PVector to = negate(from, rmask);
+        from.add(0,m,0);
+        to.add(0,m,0);
+
+        // Draw a line from the original point and the generated points
+        noFill();
+        stroke(255);
+        drawLine(from,to);
+
+        from.add(0,-m,0);
+        temp[k] = 0;
+      }
+    }
+  }
+}
+
+
+
+public void drawLine(PVector from, PVector to) {
+  line(from.x,from.y,from.z,to.x,to.y,to.z);
+}
+
+public void drawSphere(PVector pos, int radius) {
+  pushMatrix();
+  translate(pos.x,pos.y,pos.z);
+  sphere(radius);
+  popMatrix();
+}
+HashMap<Integer,Boolean> keys = new HashMap<Integer,Boolean>();
+boolean mouse_is_dragged = false;
+
+public int[] get_ULDR() {
+  int[] temp = {38,37,40,39};
+  return get_keys(temp);
+}
+public int[] get_WASD() {
+  int[] temp = {87,65,83,68};
+  return get_keys(temp);
+}
+public int[] get_keys(int[] key_codes) {
+  
+  int[] temp = new int[key_codes.length];
+  int count = 0;
+  for (int code : key_codes) {
+    if(keys.get(code) == null || keys.get(code) == false)
+      temp[count++] = 0;
+    else
+      temp[count++] = 1; 
+  }
+  return temp;
+}
+
+
+public void mouseDragged() {
+  mouse_is_dragged = true;
+}
+
+public void mouseReleased() {
+  mouse_is_dragged = false;
+}
+
+public void keyPressed() {
+  keys.put(keyCode,true);
+}
+public void keyReleased() {
+  keys.put(keyCode,false);
+}
+PVector DEF_MASK = new PVector(1,1,1);
+public PVector negate(PVector vec, PVector mask) {
+  
+  /** Function: -2n+1
+    * O(0) =  1
+    * O(1) = -1
+    */
+  mask.mult(-2);
+  mask.add(1,1,1);
+
+  PVector temp = new PVector(vec.x*mask.x,vec.y*mask.y,vec.z*mask.z);
+  return temp;
+}
+
+public PVector negate(PVector vec) {
+  return negate(vec,DEF_MASK);
+}
+
+final boolean GLOBAL_DEBUG = true;
+final float GLOBAL_G = 0.1f;
+final PVector GLOBAL_DOWN = new PVector(0,-1,0);
   public void settings() {  fullScreen(P3D);  smooth(8); }
   static public void main(String[] passedArgs) {
     String[] appletArgs = new String[] { "Simulacron" };

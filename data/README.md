@@ -9,11 +9,12 @@ The original project, which was the starting place for this code, was clunky and
 This current project was started near the end of my Sophmore year, having learned a lot more about Computer Science fundamentals. As well as
 gaining a lot more experience. One of the main reasons I undertook this project was to challenge my programming skills by adhering to 
 the fundamentals of good software design such as:
-   * Modibility vs Extendability,
-   * Cohesion vs Coupling, 
-   * Abstraction,
-   * Inheritance,
-   * Etc...
+
+- Modibility vs Extendability
+- Cohesion vs Coupling
+- Abstraction
+- Inheritance
+- Etc...
 
 
 

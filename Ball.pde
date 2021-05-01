@@ -78,10 +78,7 @@ public class Ball extends Particle {
       fill(fill.x,fill.y,fill.z);
     
 
-    pushMatrix();
-    translate(pos.x,pos.y,pos.z);
-    sphere(radius);
-    popMatrix();
+    drawSphere(pos,radius);
     
   }
 

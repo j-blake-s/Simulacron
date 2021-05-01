@@ -1,15 +1,15 @@
-class Enviroment {
+class Environment {
   
   private CameraRig rig;
   private final float floor = 0;
   
-  public Enviroment() {
+  public Environment() {
     PVector eye = new PVector(300,300,300);
     rig = new FreeCameraRig(eye);
     rig.center(new PVector(299,300,299));
   }
 
-  public Enviroment(CameraRig c) {
+  public Environment(CameraRig c) {
     rig = c;
   }
 
@@ -20,6 +20,7 @@ class Enviroment {
   public void film() {
     rig.move();
     rig.film();
+    rig.instructions();
   }
 
   public float floor() {

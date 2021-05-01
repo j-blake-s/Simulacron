@@ -1,6 +1,10 @@
 public class FreeCameraRig extends CameraRig {
 
-  private final PVector DEF_UP = new PVector(0,-1,0);
+  float F_SPEED = 20;
+  float LR_SPEED = 20;
+  float UP_SPEED = 5;
+
+  private final PVector DEF_UP = GLOBAL_DOWN;
   private final PVector DEF_DIR = new PVector(0,0,1);
   private final PVector DEF_EYE = new PVector(0,0,0);
 
@@ -33,11 +37,15 @@ public class FreeCameraRig extends CameraRig {
   }
 
   // Implement abstract method from CameraRig
+  public void instructions() {
+    //textSize(32);
+    //fill(255);
+    //text("Hello",0,0);
+  }
+  // Implement abstract method from CameraRig
   public boolean move() {
     
-    float move_forward = 10;
-    float move_left_right = 10;
-    float move_up_speed = 5;
+
 
     // WASD key presses
     int[] WASD = get_WASD();
@@ -55,7 +63,7 @@ public class FreeCameraRig extends CameraRig {
     // Determine forward/backward movement
     PVector forward = PVector.sub(new_center,new_eye);
     forward.normalize();
-    forward.mult(move_forward);
+    forward.mult(F_SPEED);
 
 
 
@@ -64,7 +72,7 @@ public class FreeCameraRig extends CameraRig {
     //left.normalize();
     left = left.cross(forward);
     left.normalize();
-    left.mult(move_left_right);
+    left.mult(LR_SPEED);
 
 
 
@@ -88,7 +96,7 @@ public class FreeCameraRig extends CameraRig {
     int[] up_down = get_keys(up_down_keys);
     int UD = up_down[0] - up_down[1];
 
-    PVector m_u = new PVector(0,move_up_speed*UD,0);
+    PVector m_u = new PVector(0,UP_SPEED*UD,0);
     eye(PVector.add(eye(),m_u));
     center(PVector.add(center(),m_u));
 

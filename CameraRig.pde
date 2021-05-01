@@ -2,7 +2,7 @@ public abstract class CameraRig {
 
   protected PVector e = new PVector(0,0,0);
   protected PVector c = new PVector(0,0,0);
-  protected PVector u = new PVector(0,-1,0);
+  protected PVector u = GLOBAL_DOWN;
   protected Camera cam = null;
 
 
@@ -11,6 +11,10 @@ public abstract class CameraRig {
 
   // Moves the camera according to some function
   public abstract boolean move();
+
+  // Displays the instructions for the camera to the screen
+  public abstract void instructions();
+
 
   // Films the camera
   public boolean film() {

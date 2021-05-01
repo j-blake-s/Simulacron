@@ -5,8 +5,8 @@
   * @param gridDensity  - Space between each grid line
   */
 int DEF_FLOOR_HEIGHT = 0;
-int DEF_FLOOR_SIZE = 2000;
-int DEF_GRID_DENSITY = 100;
+int DEF_FLOOR_SIZE = 3000;
+int DEF_GRID_DENSITY = 200;
 public void drawFloorGrid(int floorHeight, int floorSize, int gridDensity) {
 
   int fh = (floorHeight >= 0) ? floorHeight : DEF_FLOOR_HEIGHT;
@@ -26,47 +26,47 @@ public void drawFloorGrid(int floorHeight, int floorSize, int gridDensity) {
 
 /**
   * Draws a room centerd from (0,0,0)
-  * @param floor      - Y height of the room
   * @param ceiling    - Y height of the ceiling
   * @param floorSize  - Size of the base of the room
 */
-public void drawRoom(int floor, int ceiling, int floorSize) {
-  
-  int y1 = floor;
-  int y2 = ceiling;
+float DEF_ROOM_HEIGHT_ = 1500;
+float DEF_ROOM_BASE = 6000;
+public void drawRoom(float height_, float base) {
 
-  int x1 = -floorSize/2;
-  int x2 = floorSize/2;
+  float h = (height_ > 0) ? height_ : DEF_ROOM_HEIGHT_;
+  float b = (base/2 > 0) ? base/2 : DEF_ROOM_BASE/2;
+  float m = h/2;
 
-  int z1 = -floorSize/2;
-  int z2 =floorSize/2; 
+  PVector template = new PVector(-b,-m,-b);
 
-  noFill();
-  stroke(255);
+  // Generate 4 points
+  for (int i = 0; i < 2;++i) {
+    for (int j = 0; j < 2;++j) {
 
-  // Lines from (x1,y1,z1)
-  line(x1,y1,z1,x2,y1,z1);
-  line(x1,y1,z1,x1,y1,z2);
-  line(x1,y1,z1,x1,y2,z1);
+      PVector lmask = new PVector(i,(j+i)%2,j);
+      PVector from = negate(template,lmask);
 
-  // Lines from (x2,y1,z2)
-  line(x2,y1,z2,x1,y1,z2);
-  line(x2,y1,z2,x2,y2,z2);
-  line(x2,y1,z2,x2,y1,z1);
+      // For each point, generate 3 more points 
+      int[] temp = new int[]{0,0,0};
+      for (int k = 0;k < 3;++k) {
+        
+        temp[k] = 1;
+        PVector rmask = new PVector(temp[0],temp[1],temp[2]);
+        PVector to = negate(from, rmask);
+        from.add(0,m,0);
+        to.add(0,m,0);
 
-  // Lines from (x2,y2,z1)
-  line(x2,y2,z1,x2,y1,z1);
-  line(x2,y2,z1,x2,y2,z2);
-  line(x2,y2,z1,x1,y2,z1);
+        // Draw a line from the original point and the generated points
+        noFill();
+        stroke(255);
+        drawLine(from,to);
 
-
-  // Lines from (x1,y2,z2)
-  line(x1,y2,z2,x1,y1,z2);
-  line(x1,y2,z2,x1,y2,z1);
-  line(x1,y2,z2,x2,y2,z2);
-
-
-
-  
+        from.add(0,-m,0);
+        temp[k] = 0;
+      }
+    }
+  }
 }
+
+
 
