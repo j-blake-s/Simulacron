@@ -1,5 +1,6 @@
 Enviroment env;
-Ball ball;
+
+
 void setup() {
   fullScreen(P3D);
   smooth(8);
@@ -11,13 +12,8 @@ void setup() {
 }
 
 void draw() {
-
-  env.clear();
-  gravity(ball);
-  bounce(env,ball);
-  ball.update();
-  ball.draw();
-  env.film();
-
+  background(0);
+  drawFloorGrid(-1,-1,-1);
+  drawRoom(0,1000,2000);
 }
 
