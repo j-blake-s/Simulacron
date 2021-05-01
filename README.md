@@ -12,8 +12,8 @@ the fundamentals of good software design such as:
 
 - Modibility vs Extendability
 - Cohesion vs Coupling
-- Abstraction
-- Inheritance
+- Adaptability
+- Design Patterns
 - Etc...
 
 
@@ -25,4 +25,3 @@ Author: [Blake Seekings](https://github.com/j-blake-s)
 Language/IDE: [Processing.java](https://processing.org/)
 
 Date of Creation: 2/27/2021
-B
