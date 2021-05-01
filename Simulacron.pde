@@ -8,12 +8,12 @@ void setup() {
   frameRate(60);
 
   env = new Enviroment();
-  ball = new Ball();
 }
 
 void draw() {
-  background(0);
-  drawFloorGrid(-1,-1,-1);
-  drawRoom(0,1000,2000);
+  env.clear();
+  drawFloorGrid(-1,3000,200);
+  drawRoom(0,1500,6000);
+  env.film();
 }
 

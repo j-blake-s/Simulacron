@@ -15,8 +15,6 @@ class Enviroment {
 
   public void clear() {
     background(0);
-    drawFloorGrid();
-    drawCenterAxis();
   }
 
   public void film() {
@@ -28,17 +26,7 @@ class Enviroment {
     return floor;
   }
 
-  public void drawFloorGrid() {
-    int base = 2000;
-    int grain = 100;
-
-    noFill();
-    stroke(255);
-    for (int i = -base; i < base; i += grain) {
-      line(i,floor,-base,i,floor,base);
-      line(-base,floor,i,base,floor,i);
-    }
-  }
+ 
 
 
   public void drawCenterAxis() {

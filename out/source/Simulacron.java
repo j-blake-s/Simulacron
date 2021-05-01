@@ -15,12 +15,8 @@ import java.io.IOException;
 public class Simulacron extends PApplet {
 
 Enviroment env;
-<<<<<<< HEAD
-Ball ball;
-=======
 
 
->>>>>>> 413c1f6b180c6086365268986afd3cd37b6381c6
 public void setup() {
   
   
@@ -28,24 +24,13 @@ public void setup() {
   frameRate(60);
 
   env = new Enviroment();
-  ball = new Ball();
 }
 
 public void draw() {
-<<<<<<< HEAD
-
   env.clear();
-  gravity(ball);
-  bounce(env,ball);
-  ball.update();
-  ball.draw();
+  drawFloorGrid(-1,3000,200);
+  drawRoom(0,1500,6000);
   env.film();
-
-=======
-  background(0);
-  drawFloorGrid(-1,-1,-1);
-  drawRoom(0,1000,2000);
->>>>>>> 413c1f6b180c6086365268986afd3cd37b6381c6
 }
 
 public class Ball extends Particle {
@@ -383,8 +368,6 @@ class Enviroment {
 
   public void clear() {
     background(0);
-    drawFloorGrid();
-    drawCenterAxis();
   }
 
   public void film() {
@@ -396,17 +379,7 @@ class Enviroment {
     return floor;
   }
 
-  public void drawFloorGrid() {
-    int base = 2000;
-    int grain = 100;
-
-    noFill();
-    stroke(255);
-    for (int i = -base; i < base; i += grain) {
-      line(i,floor,-base,i,floor,base);
-      line(-base,floor,i,base,floor,i);
-    }
-  }
+ 
 
 
   public void drawCenterAxis() {
@@ -477,8 +450,8 @@ public class FreeCameraRig extends CameraRig {
   // Implement abstract method from CameraRig
   public boolean move() {
     
-    float move_forward = 5;
-    float move_left_right = 5;
+    float move_forward = 10;
+    float move_left_right = 10;
     float move_up_speed = 5;
 
     // WASD key presses
@@ -583,7 +556,7 @@ public void drawFloorGrid(int floorHeight, int floorSize, int gridDensity) {
   noFill();
   stroke(255);
 
-  for (int i = -fs; i < fs; i += gd) {
+  for (int i = -fs; i <= fs; i += gd) {
     line(i,fh,-fs,i,fh,fs);
     line(-fs,fh,i,fs,fh,i);
   }
@@ -711,21 +684,15 @@ static class Math {
     
   }
 }
-
-
 final PVector down = new PVector(0,-1,0);
 final float G = -0.1f;
-
-
 
 public void gravity(PObject obj) {
   
   PVector acc = obj.getAcc();
   acc.add(0,G,0);
   obj.setAcc(acc);
-
 }
-
 
 public void bounce(Enviroment env, PObject obj) {
 
@@ -737,9 +704,7 @@ public void bounce(Enviroment env, PObject obj) {
   if (pos.y <= floor)
     acc.add(0,10,0);
   
-  obj.setAcc(acc);
-
-  
+  obj.setAcc(acc);  
 }
 public interface PObject {
   

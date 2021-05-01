@@ -16,7 +16,7 @@ public void drawFloorGrid(int floorHeight, int floorSize, int gridDensity) {
   noFill();
   stroke(255);
 
-  for (int i = -fs; i < fs; i += gd) {
+  for (int i = -fs; i <= fs; i += gd) {
     line(i,fh,-fs,i,fh,fs);
     line(-fs,fh,i,fs,fh,i);
   }

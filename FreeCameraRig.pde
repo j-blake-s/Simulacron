@@ -35,8 +35,8 @@ public class FreeCameraRig extends CameraRig {
   // Implement abstract method from CameraRig
   public boolean move() {
     
-    float move_forward = 5;
-    float move_left_right = 5;
+    float move_forward = 10;
+    float move_left_right = 10;
     float move_up_speed = 5;
 
     // WASD key presses
