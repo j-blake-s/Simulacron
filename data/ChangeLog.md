@@ -1,11 +1,13 @@
 # Changelog
 
 ## 5/1/2021
+  > __*Major*__
+  >> - Reduced __graphics::drawRoom()__ to contain less lines
+  >> - Got rid of __PEngine::bounce()__
+  >> - Added an instructions method to __CameraRig__ to show instructions to the screen (not working)
   
-  >> - Reduced the Graphics::drawRoom() method to contain less lines
-  >> - Got rid of bounce() in PEngine
-  >> - Added an instructions method to CameraRig to show instructions to the screen (not working)
-  >> - Added settings.pde to contain global variables for the program
-  >> - Added helpers.pde to contain small functional methods
-  >> - Added ChangeLog.md
-  >> - Added ClassDescriptions.md
+  > __*Minor*__
+  >> - Added __settings.pde__ to contain global variables for the program
+  >> - Added __helpers.pde__ to contain small functional methods
+  >> - Added __ChangeLog.md__
+  >> - Added __ClassDescriptions.md__
