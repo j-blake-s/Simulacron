@@ -2,35 +2,35 @@
 
 __File Name__ | _File Type_ | <extends_implements> __File(s)__ | <depends_on> __File(s)__
 
-## Interfaces
+## Non-Initalized Classes
 
-*__PObject.pde__* | _Interface_
+*__PObjectBase__* | _Abstract Class_ | depends on *__Shape__*, *__State__*
+  
+  > * Forms the base of PObject
+  > * Defines basic methods, i.e getters, setters, etc.
 
-  > * Keystone of the physics engine
-  > * Enforces position, velocity, acceleration, and mass on all subclasses.
+*__Shape__* | _Interface_ | 
 
-*__Drawable.pde__* | _Interface_ | extends *__PObject.pde__*
+  > * The different shapes that PObjects can take
+  > * Draws the shape to the screen
 
-  > * Keystone of the GUI
-  > * Enforces ability to be drawn on all subclasses
+*__State__* | _Interface_ |
+
+  > * UMIMPLEMENTED
+  > * Plan for it to determine the functionality of the POBject
 
 ## Classes
+
+__PObject__ | _Class_ | extends *__PObjectBase__* | depends on *__Shape__*, *__State__*
+
+  > * Keystone of the program
+  > * PObjects have a moddable shape which controls how they look
+  > * Can be subject to forces
 
 __Environment.pde__ | _Class_ | depends on *__CameraRig.pde__*
 
   > * Holds all of the contextual information for and faciliates the current scene's execution
   > * Has a CameraRig object which is used to display the scene
-
-*__Particle.pde__* | _Class_ | implements *__Drawable.pde__*
-
-  > * Implements all of the methods from *__PObject__* and *__Drawable__*
-  > * Contains 1 abstract method:
-  >> * draw() _Draws this Particle to the screen_
-
-__Ball.pde__ | _Class_ | extends *__Particle.pde__*
-
-  > * Displays a sphere to the screen at its location
-  > * Subject to gravity
 
 __Camera.pde__ | _Class_
 
@@ -65,9 +65,6 @@ __FreeCameraRig.pde__ | _Class_ | extends *__CameraRig.pde__* | depends __Camera
   
   > * Simple methods which provide extra functionality to Processing methods
 
-*__PEngine.pde__* | _Method File_ | depends on *__PObject.pde__*
-  
-  > * Applies forces to PObjects
 
 *__input.pde__* | _Method File_
   

@@ -8,3 +8,17 @@ public void drawSphere(PVector pos, int radius) {
   sphere(radius);
   popMatrix();
 }
+
+public void fill(PVector fill) {
+  if (fill.x < 0 || fill.y < 0 || fill.z < 0)
+    noFill();
+  else
+    fill(fill.x,fill.y,fill.z);
+}
+
+public void stroke(PVector stroke) {
+  if (stroke.x < 0 || stroke.y < 0 || stroke.z < 0)
+    noStroke();
+  else
+    stroke(stroke.x,stroke.y,stroke.z);
+}

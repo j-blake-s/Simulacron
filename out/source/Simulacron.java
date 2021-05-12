@@ -37,91 +37,6 @@ public void p1() {
   env.film();
 }
 
-public class Ball extends Particle {
-
-  private final PVector DEF_POS = new PVector(0,0,0);
-  private final PVector DEF_VEL = new PVector(0,0,0);
-  private final PVector DEF_ACC = new PVector(0,0,0);
-  private final float DEF_MASS = 1;
-  private final int DEF_RADIUS = 20;
-
-
-  private int radius;
-
-  public Ball() {
-    this.init(DEF_POS,DEF_VEL,DEF_ACC,DEF_RADIUS,DEF_MASS);
-  }
-  public Ball(PVector pos_) {
-    this.init(pos_,DEF_VEL,DEF_ACC,DEF_RADIUS,DEF_MASS);
-  }
-  public Ball(PVector pos_,float mass_) {
-    this.init(pos_,DEF_VEL,DEF_ACC,DEF_RADIUS,mass_);
-  }
-  public Ball(PVector pos_,PVector vel_) {
-    this.init(pos_,vel_,DEF_ACC,DEF_RADIUS,DEF_MASS);
-  }
-  public Ball(PVector pos_,PVector vel_,float mass_) {
-    this.init(pos_,vel_,DEF_ACC,DEF_RADIUS,mass_);
-  }
-  public Ball(PVector pos_,PVector vel_,PVector acc_) {
-    this.init(pos_,vel_,acc_,DEF_RADIUS,DEF_MASS);
-  }
-  public Ball(PVector pos_,PVector vel_,PVector acc_,float mass_) {
-    this.init(pos_,vel_,acc_,DEF_RADIUS,mass_);
-  }
-
-  public Ball(PVector pos_,int radius_) {
-    this.init(pos_,DEF_VEL,DEF_ACC,radius_,DEF_MASS);
-  }
-  public Ball(PVector pos_,int radius_,float mass_) {
-    this.init(pos_,DEF_VEL,DEF_ACC,radius_,mass_);
-  }
-  public Ball(PVector pos_,PVector vel_,int radius_) {
-    this.init(pos_,vel_,DEF_ACC,radius_,DEF_MASS);
-  }
-  public Ball(PVector pos_,PVector vel_,int radius_,float mass_) {
-    this.init(pos_,vel_,DEF_ACC,radius_,mass_);
-  }
-  public Ball(PVector pos_,PVector vel_,PVector acc_,int radius_) {
-    this.init(pos_,vel_,acc_,radius_,DEF_MASS);
-  }
-  public Ball(PVector pos_,PVector vel_,PVector acc_,int radius_,float mass_) {
-    this.init(pos_,vel_,acc_,radius_,mass_);
-  }
-
-
-
-  private void init(PVector pos_,PVector vel_,PVector acc_,int radius_,float mass_) {
-    this.pos = pos_;
-    this.vel = vel_;
-    this.acc = acc_;
-    this.mass = mass_;
-    this.radius = radius_;
-    this.setStroke(255);
-    this.setNoFill();
-  }
-
-
-  public void draw() {
-    if (isHidden())
-      return;
-
-    if (stroke.x < 0)
-      noStroke();
-    else 
-      stroke(stroke.x,stroke.y,stroke.z);
-    
-    if (fill.x < 0)
-      noFill();
-    else
-      fill(fill.x,fill.y,fill.z);
-    
-
-    drawSphere(pos,radius);
-    
-  }
-
-}
 /**
  *-> Faciliatates use of the camera function.
  *-> Keeps track of position, direction, and orientation.
@@ -302,59 +217,6 @@ public abstract class CameraRig {
 
     return this.c;
   } 
-}
-public interface Drawable extends PObject {
-
-  /**
-    * Draws the object to the canvas
-    */
-  public void draw();
-
-  /**
-    * Brings this object out of hiding and allows it to be drawn to the canvas
-    */
-  public void show();
-
-  /**
-    * Hides this object by not letting it be drawn to the canvas
-    */
-  public void hide();
-
-  /**
-    * Checks whether this object is hidden or not
-    */
-  public boolean isHidden();
-
-  /** 
-    * Disables the stroke feature for this object
-    */
-  public void setNoStroke();
-  
-  /**
-    * Stores the Black White value for use later
-    */
-  public PVector setStroke(int black_white);
-  
-  /**
-    * Stores the RGB value for use later
-    */
-  public PVector setStroke(int r, int g, int b);
-
-  /**
-    * Disables the fill feature for this object
-    */
-  public void setNoFill();
-
-  /**
-    *  Stores the Black White value for use later
-    */
-  public PVector setFill(int black_white);
-
-  /**
-    * Stores the RGB value for use later
-    */
-  public PVector setFill(int r, int g, int b);
-
 }
 class Environment {
   
@@ -552,43 +414,106 @@ public class FreeCameraRig extends CameraRig {
     return new PVector(t.x+a,t.y+b,t.z+c);
   }
 }
-public void gravity(PObject obj) {
-  
-  PVector grav = PVector.mult(GLOBAL_DOWN,GLOBAL_G);
-  PVector acc = obj.getAcc();
-  acc.add(grav);
-  obj.setAcc(acc);
+public class PObject extends PObjectBase {
+
+
+  public PVector addForce(PVector force) {
+    netForce.add(force);
+    return netForce;
+  }
+
+  public void update() {
+    // F = ma -> a = F/m
+    acc = PVector.div(netForce,mass);
+    vel.add(acc);
+    pos.add(vel);
+    netForce = new PVector(0,0,0);
+  }
+
+  public void draw() {
+
+    stroke(this.stroke);
+    fill(this.fill);
+    this.shape.draw();
+  }  
 }
-public interface PObject {
-  
-  public PVector getPos();
-  public PVector setPos(PVector vector);
+public abstract class PObjectBase {
 
-  public PVector getVel();
-  public PVector setVel(PVector vector);
-  
-  public PVector getAcc();
-  public PVector setAcc(PVector vector);
-  
-  public void update();
-
-  public float getMass();
-  public float setMass(float f);
-
-}
-public abstract class Particle implements Drawable {
-
-  protected PVector pos;
-  protected PVector vel;
-  protected PVector acc;
-  protected float mass;
-  
-  
-  protected boolean hidden;
-
+  /**
+    * Shape
+    * Includes drawing method
+    * Gives info on the bounds of the shape
+    */
+  protected Shape shape;
   protected PVector stroke;
   protected PVector fill;
 
+  /**
+    * State
+    * Determines the state of the PObject and what it can do
+    */
+  protected State state;
+
+  // Physics Information
+  protected PVector pos;
+  protected PVector vel;
+  protected PVector acc;
+  protected PVector netForce;
+  protected float mass = 1.0f;
+
+  /** 
+    * Disables the stroke feature for this object
+    */
+  public void setNoStroke() {
+    stroke = new PVector(-1,-1,-1);
+  }
+  
+  /**
+    * Stores the Black White value for use later
+    */
+  public PVector setStroke(int b_w) {
+    stroke = new PVector(b_w,b_w,b_w);
+    return stroke;
+  }
+  
+  /**
+    * Stores the RGB value for use later
+    */
+  public PVector setStroke(int r, int g, int b) {
+    stroke = new PVector(r,g,b);
+    return stroke;
+  }
+
+  public PVector getStroke() {
+    return stroke;
+  }
+
+  /**
+    * Disables the fill feature for this object
+    */
+  public void setNoFill() {
+    fill = new PVector(-1,-1,-1);
+  }
+
+  /**
+    *  Stores the Black White value for use later
+    */
+  public PVector setFill(int b_w) {
+    fill = new PVector(b_w,b_w,b_w);
+    return fill;
+  }
+
+  /**
+    * Stores the RGB value for use later
+    */
+  public PVector setFill(int r, int g, int b) {
+    fill = new PVector(r,g,b);
+    return fill;
+  }
+
+  public PVector getFill() {
+    return this.fill;
+  }
 
   /**
     * Position
@@ -633,112 +558,12 @@ public abstract class Particle implements Drawable {
     this.mass = f;
     return this.mass;
   }
-
-  public void update() {
-    vel.add(acc);
-    pos.add(vel);
-    acc.set(0,0,0);
-  }
-
-  public void shadow(PObject obj) {
-    shiftTo(obj);
-    mimick(obj);
-  }
-  public void become(PObject obj) {
-    shadow(obj);
-    this.mass = obj.getMass();
-  }
-  public void mimick(PObject obj) {
-    this.vel = obj.getVel();
-    this.acc = obj.getAcc();
-  }
-
-  public void shiftTo(PObject obj) {
-    this.pos = obj.getPos();
-  }
-
-   /**
-    * Draws the object to the canvas
-    */
-  public abstract void draw();
-
-  /**
-    * Brings this object out of hiding and allows it to be drawn to the canvas
-    */
-  public void show() {
-    this.hidden = false;
-  }
-
-  /**
-    * Hides this object by not letting it be drawn to the canvas
-    */
-  public void hide() {
-    this.hidden = true;
-  }
-
-  /**
-    * Checks whether this object is hidden or not
-    */
-  public boolean isHidden() {
-    return this.hidden;
-  }
-
-  /** 
-    * Disables the stroke feature for this object
-    */
-  public void setNoStroke() {
-    stroke = new PVector(-1,-1,-1);
-  }
+}
+public interface Shape {
+  public void draw();
+}
+public interface State {
   
-  /**
-    * Stores the Black White value for use later
-    */
-  public PVector setStroke(int b_w) {
-    stroke = new PVector(b_w,b_w,b_w);
-    return stroke;
-  }
-  
-  /**
-    * Stores the RGB value for use later
-    */
-  public PVector setStroke(int r, int g, int b) {
-    stroke = new PVector(r,g,b);
-    return stroke;
-  }
-
-  public PVector getStroke() {
-    return this.stroke;
-  }
-
-  /**
-    * Disables the fill feature for this object
-    */
-  public void setNoFill() {
-    fill = new PVector(-1,-1,-1);
-  }
-
-  /**
-    *  Stores the Black White value for use later
-    */
-  public PVector setFill(int b_w) {
-    fill = new PVector(b_w,b_w,b_w);
-    return fill;
-  }
-
-  /**
-    * Stores the RGB value for use later
-    */
-  public PVector setFill(int r, int g, int b) {
-    fill = new PVector(r,g,b);
-    return fill;
-  }
-
-  public PVector getFill() {
-    return this.fill;
-  }
-
-  
-
 }
 /**
   * Draws a floor grid
@@ -821,6 +646,20 @@ public void drawSphere(PVector pos, int radius) {
   translate(pos.x,pos.y,pos.z);
   sphere(radius);
   popMatrix();
+}
+
+public void fill(PVector fill) {
+  if (fill.x < 0 || fill.y < 0 || fill.z < 0)
+    noFill();
+  else
+    fill(fill.x,fill.y,fill.z);
+}
+
+public void stroke(PVector stroke) {
+  if (stroke.x < 0 || stroke.y < 0 || stroke.z < 0)
+    noStroke();
+  else
+    stroke(stroke.x,stroke.y,stroke.z);
 }
 HashMap<Integer,Boolean> keys = new HashMap<Integer,Boolean>();
 boolean mouse_is_dragged = false;

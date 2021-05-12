@@ -1,17 +1,23 @@
-public interface PObject {
-  
-  public PVector getPos();
-  public PVector setPos(PVector vector);
+public class PObject extends PObjectBase {
 
-  public PVector getVel();
-  public PVector setVel(PVector vector);
-  
-  public PVector getAcc();
-  public PVector setAcc(PVector vector);
-  
-  public void update();
 
-  public float getMass();
-  public float setMass(float f);
+  public PVector addForce(PVector force) {
+    netForce.add(force);
+    return netForce;
+  }
 
+  public void update() {
+    // F = ma -> a = F/m
+    acc = PVector.div(netForce,mass);
+    vel.add(acc);
+    pos.add(vel);
+    netForce = new PVector(0,0,0);
+  }
+
+  public void draw() {
+
+    stroke(this.stroke);
+    fill(this.fill);
+    this.shape.draw();
+  }  
 }
