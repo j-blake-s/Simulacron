@@ -1,7 +1,27 @@
 public class PObject extends PObjectBase {
 
+  private final Shape DEF_SHAPE = new Ball();
+  private final PVector DEF_SPAWN = new PVector(0,0,0);
 
-  public PVector addForce(PVector force) {
+  public PObject() {
+    init(null,null);
+  }
+
+  public PObject(PVector posi) {
+    init(posi,null);
+  }
+
+  public PObject(PVector posi, Shape shape) {
+    init(posi,shape);
+  }
+
+
+  private void init(PVector posi,Shape shape) {
+    this.pos = (posi != null) ? posi : DEF_SPAWN;
+    this.shape = (shape != null) ? shape : DEF_SHAPE;
+  }
+
+  public PVector applyForce(PVector force) {
     netForce.add(force);
     return netForce;
   }
@@ -16,8 +36,9 @@ public class PObject extends PObjectBase {
 
   public void draw() {
 
-    stroke(this.stroke);
-    fill(this.fill);
-    this.shape.draw();
+    applyStroke(objStroke);
+    applyFill(objFill);
+    shape.draw(this.pos);
+
   }  
 }

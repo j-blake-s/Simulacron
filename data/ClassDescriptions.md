@@ -27,6 +27,12 @@ __PObject__ | _Class_ | extends *__PObjectBase__* | depends on *__Shape__*, *__S
   > * PObjects have a moddable shape which controls how they look
   > * Can be subject to forces
 
+__Ball__ | _Class_ | implements *__Shape__*
+
+  > * Draws a sphere of different radii to the screen
+  > * Radius is passed to this as parameter
+  > * Requries PVector denoting position as parameter for drawing
+
 __Environment.pde__ | _Class_ | depends on *__CameraRig.pde__*
 
   > * Holds all of the contextual information for and faciliates the current scene's execution

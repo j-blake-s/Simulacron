@@ -15,6 +15,7 @@ import java.io.IOException;
 public class Simulacron extends PApplet {
 
 Environment env;
+PObject obj;
 
 
 public void setup() {
@@ -24,6 +25,10 @@ public void setup() {
   frameRate(60);
 
   env = new Environment();
+  obj = new PObject();
+  obj.setPos(new PVector(0,500,0));
+  obj.setVel(new PVector(0,0,0));
+  
 }
 
 public void draw() {
@@ -34,9 +39,38 @@ public void p1() {
   env.clear();
   drawFloorGrid(-1,-1,-1);
   drawRoom(-1,-1);
+  obj.applyForce(new PVector(0,-0.1f,0));
+  obj.update();
+  obj.draw();
   env.film();
 }
 
+public class Ball implements Shape {
+
+  private final float RADIUS_LIMIT = 100;
+  private final float DEF_RADIUS = 20;
+  private float radius = DEF_RADIUS;
+
+  public Ball() {
+ 
+  }
+
+  public Ball(float r) {
+    setRadius(r);
+  }
+
+  public float getRadius() {
+    return radius;
+  }
+
+  public void setRadius(float r) {
+    radius = (0 < r && r < RADIUS_LIMIT) ? r : radius;
+  }
+
+  public void draw(PVector pos) {
+    drawSphere(pos,radius);
+  }
+}
 /**
  *-> Faciliatates use of the camera function.
  *-> Keeps track of position, direction, and orientation.
@@ -414,157 +448,6 @@ public class FreeCameraRig extends CameraRig {
     return new PVector(t.x+a,t.y+b,t.z+c);
   }
 }
-public class PObject extends PObjectBase {
-
-
-  public PVector addForce(PVector force) {
-    netForce.add(force);
-    return netForce;
-  }
-
-  public void update() {
-    // F = ma -> a = F/m
-    acc = PVector.div(netForce,mass);
-    vel.add(acc);
-    pos.add(vel);
-    netForce = new PVector(0,0,0);
-  }
-
-  public void draw() {
-
-    stroke(this.stroke);
-    fill(this.fill);
-    this.shape.draw();
-  }  
-}
-public abstract class PObjectBase {
-
-  /**
-    * Shape
-    * Includes drawing method
-    * Gives info on the bounds of the shape
-    */
-  protected Shape shape;
-  protected PVector stroke;
-  protected PVector fill;
-
-  /**
-    * State
-    * Determines the state of the PObject and what it can do
-    */
-  protected State state;
-
-  // Physics Information
-  protected PVector pos;
-  protected PVector vel;
-  protected PVector acc;
-  protected PVector netForce;
-  protected float mass = 1.0f;
-
-  /** 
-    * Disables the stroke feature for this object
-    */
-  public void setNoStroke() {
-    stroke = new PVector(-1,-1,-1);
-  }
-  
-  /**
-    * Stores the Black White value for use later
-    */
-  public PVector setStroke(int b_w) {
-    stroke = new PVector(b_w,b_w,b_w);
-    return stroke;
-  }
-  
-  /**
-    * Stores the RGB value for use later
-    */
-  public PVector setStroke(int r, int g, int b) {
-    stroke = new PVector(r,g,b);
-    return stroke;
-  }
-
-  public PVector getStroke() {
-    return stroke;
-  }
-
-  /**
-    * Disables the fill feature for this object
-    */
-  public void setNoFill() {
-    fill = new PVector(-1,-1,-1);
-  }
-
-  /**
-    *  Stores the Black White value for use later
-    */
-  public PVector setFill(int b_w) {
-    fill = new PVector(b_w,b_w,b_w);
-    return fill;
-  }
-
-  /**
-    * Stores the RGB value for use later
-    */
-  public PVector setFill(int r, int g, int b) {
-    fill = new PVector(r,g,b);
-    return fill;
-  }
-
-  public PVector getFill() {
-    return this.fill;
-  }
-
-  /**
-    * Position
-    */
-  public PVector getPos() {
-    return this.pos;
-  }
-  public PVector setPos(PVector vector) {
-    this.pos = vector;
-    return this.pos;
-  }
-
-  /**
-    * Velocity
-    */
-  public PVector getVel() {
-    return this.vel;
-  }
-  public PVector setVel(PVector vector) {
-    this.vel = vector;
-    return this.vel;
-  }
-  
-  /**
-    * Acceleration
-    */
-  public PVector getAcc() {
-    return this.acc;
-  }
-  public PVector setAcc(PVector vector) {
-    this.acc = vector;
-    return this.acc;
-  }
-  
-  /**
-    * Mass
-    */
-  public float getMass() {
-    return this.mass;
-  }
-  public float setMass(float f) {
-    this.mass = f;
-    return this.mass;
-  }
-}
-public interface Shape {
-  public void draw();
-}
-public interface State {
-  
-}
 /**
   * Draws a floor grid
   * @param floorHeight  - Y height of the grid
@@ -637,30 +520,6 @@ public void drawRoom(float height_, float base) {
 
 
 
-public void drawLine(PVector from, PVector to) {
-  line(from.x,from.y,from.z,to.x,to.y,to.z);
-}
-
-public void drawSphere(PVector pos, int radius) {
-  pushMatrix();
-  translate(pos.x,pos.y,pos.z);
-  sphere(radius);
-  popMatrix();
-}
-
-public void fill(PVector fill) {
-  if (fill.x < 0 || fill.y < 0 || fill.z < 0)
-    noFill();
-  else
-    fill(fill.x,fill.y,fill.z);
-}
-
-public void stroke(PVector stroke) {
-  if (stroke.x < 0 || stroke.y < 0 || stroke.z < 0)
-    noStroke();
-  else
-    stroke(stroke.x,stroke.y,stroke.z);
-}
 HashMap<Integer,Boolean> keys = new HashMap<Integer,Boolean>();
 boolean mouse_is_dragged = false;
 
@@ -718,6 +577,205 @@ public PVector negate(PVector vec) {
   return negate(vec,DEF_MASK);
 }
 
+public class PObject extends PObjectBase {
+
+  private final Shape DEF_SHAPE = new Ball();
+  private final PVector DEF_SPAWN = new PVector(0,0,0);
+
+  public PObject() {
+    init(null,null);
+  }
+
+  public PObject(PVector posi) {
+    init(posi,null);
+  }
+
+  public PObject(PVector posi, Shape shape) {
+    init(posi,shape);
+  }
+
+
+  private void init(PVector posi,Shape shape) {
+    this.pos = (posi != null) ? posi : DEF_SPAWN;
+    this.shape = (shape != null) ? shape : DEF_SHAPE;
+  }
+
+  public PVector applyForce(PVector force) {
+    netForce.add(force);
+    return netForce;
+  }
+
+  public void update() {
+    // F = ma -> a = F/m
+    acc = PVector.div(netForce,mass);
+    vel.add(acc);
+    pos.add(vel);
+    netForce = new PVector(0,0,0);
+  }
+
+  public void draw() {
+
+    applyStroke(objStroke);
+    applyFill(objFill);
+    shape.draw(this.pos);
+
+  }  
+}
+public abstract class PObjectBase {
+
+  /**
+    * Shape
+    * Includes drawing method
+    * Gives info on the bounds of the shape
+    */
+  protected Shape shape = null;
+  protected PVector objStroke = new PVector(255,255,255);
+  protected PVector objFill = new PVector(255,255,255);
+
+  /**
+    * State
+    * Determines the state of the PObject and what it can do
+    */
+  protected State state = null;
+
+  // Physics Information
+  protected PVector pos;
+  protected PVector vel = new PVector(0,0,0);
+  protected PVector acc = new PVector(0,0,0);
+  protected PVector netForce = new PVector(0,0,0);
+  protected float mass = 1.0f;
+
+
+
+
+  /** 
+    * Disables the stroke feature for this object
+    */
+  public void setNoStroke() {
+    objStroke = new PVector(-1,-1,-1);
+  }
+  
+  /**
+    * Stores the Black White value for use later
+    */
+  public PVector setStroke(int b_w) {
+    objStroke = new PVector(b_w,b_w,b_w);
+    return objStroke;
+  }
+  
+  /**
+    * Stores the RGB value for use later
+    */
+  public PVector setStroke(int r, int g, int b) {
+    objStroke = new PVector(r,g,b);
+    return objStroke;
+  }
+
+  public PVector getStroke() {
+    return objStroke;
+  }
+
+  /**
+    * Disables the fill feature for this object
+    */
+  public void setNoFill() {
+    objFill = new PVector(-1,-1,-1);
+  }
+
+  /**
+    *  Stores the Black White value for use later
+    */
+  public PVector setFill(int b_w) {
+    objFill = new PVector(b_w,b_w,b_w);
+    return objFill;
+  }
+
+  /**
+    * Stores the RGB value for use later
+    */
+  public PVector setFill(int r, int g, int b) {
+    objFill = new PVector(r,g,b);
+    return objFill;
+  }
+
+  public PVector getFill() {
+    return objFill;
+  }
+
+  /**
+    * Position
+    */
+  public PVector getPos() {
+    return this.pos;
+  }
+  public PVector setPos(PVector vector) {
+    this.pos = vector;
+    return this.pos;
+  }
+
+  /**
+    * Velocity
+    */
+  public PVector getVel() {
+    return this.vel;
+  }
+  public PVector setVel(PVector vector) {
+    this.vel = vector;
+    return this.vel;
+  }
+  
+  /**
+    * Acceleration
+    */
+  public PVector getAcc() {
+    return this.acc;
+  }
+  public PVector setAcc(PVector vector) {
+    this.acc = vector;
+    return this.acc;
+  }
+  
+  /**
+    * Mass
+    */
+  public float getMass() {
+    return this.mass;
+  }
+  public float setMass(float f) {
+    this.mass = f;
+    return this.mass;
+  }
+}
+public interface Shape {
+  public void draw(PVector pos);
+}
+public interface State {
+  
+}
+public void drawLine(PVector from, PVector to) {
+  line(from.x,from.y,from.z,to.x,to.y,to.z);
+}
+
+public void drawSphere(PVector pos, float radius) {
+  pushMatrix();
+  translate(pos.x,pos.y,pos.z);
+  sphere(radius);
+  popMatrix();
+}
+
+public void applyFill(PVector f) {
+  if (f.x < 0 || f.y < 0 || f.z < 0)
+    noFill();
+  else
+    fill(f.x,f.y,f.z);
+}
+
+public void applyStroke(PVector s) {
+  if (s.x < 0 || s.y < 0 || s.z < 0)
+    noStroke();
+  else
+    stroke(s.x,s.y,s.z);
+}
 final boolean GLOBAL_DEBUG = true;
 final float GLOBAL_G = 0.1f;
 final PVector GLOBAL_DOWN = new PVector(0,-1,0);

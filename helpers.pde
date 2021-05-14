@@ -2,23 +2,23 @@ public void drawLine(PVector from, PVector to) {
   line(from.x,from.y,from.z,to.x,to.y,to.z);
 }
 
-public void drawSphere(PVector pos, int radius) {
+public void drawSphere(PVector pos, float radius) {
   pushMatrix();
   translate(pos.x,pos.y,pos.z);
   sphere(radius);
   popMatrix();
 }
 
-public void fill(PVector fill) {
-  if (fill.x < 0 || fill.y < 0 || fill.z < 0)
+public void applyFill(PVector f) {
+  if (f.x < 0 || f.y < 0 || f.z < 0)
     noFill();
   else
-    fill(fill.x,fill.y,fill.z);
+    fill(f.x,f.y,f.z);
 }
 
-public void stroke(PVector stroke) {
-  if (stroke.x < 0 || stroke.y < 0 || stroke.z < 0)
+public void applyStroke(PVector s) {
+  if (s.x < 0 || s.y < 0 || s.z < 0)
     noStroke();
   else
-    stroke(stroke.x,stroke.y,stroke.z);
+    stroke(s.x,s.y,s.z);
 }

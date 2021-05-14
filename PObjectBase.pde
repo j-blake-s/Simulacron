@@ -5,75 +5,78 @@ public abstract class PObjectBase {
     * Includes drawing method
     * Gives info on the bounds of the shape
     */
-  protected Shape shape;
-  protected PVector stroke;
-  protected PVector fill;
+  protected Shape shape = null;
+  protected PVector objStroke = new PVector(255,255,255);
+  protected PVector objFill = new PVector(255,255,255);
 
   /**
     * State
     * Determines the state of the PObject and what it can do
     */
-  protected State state;
+  protected State state = null;
 
   // Physics Information
   protected PVector pos;
-  protected PVector vel;
-  protected PVector acc;
-  protected PVector netForce;
+  protected PVector vel = new PVector(0,0,0);
+  protected PVector acc = new PVector(0,0,0);
+  protected PVector netForce = new PVector(0,0,0);
   protected float mass = 1.0;
+
+
+
 
   /** 
     * Disables the stroke feature for this object
     */
   void setNoStroke() {
-    stroke = new PVector(-1,-1,-1);
+    objStroke = new PVector(-1,-1,-1);
   }
   
   /**
     * Stores the Black White value for use later
     */
   PVector setStroke(int b_w) {
-    stroke = new PVector(b_w,b_w,b_w);
-    return stroke;
+    objStroke = new PVector(b_w,b_w,b_w);
+    return objStroke;
   }
   
   /**
     * Stores the RGB value for use later
     */
   PVector setStroke(int r, int g, int b) {
-    stroke = new PVector(r,g,b);
-    return stroke;
+    objStroke = new PVector(r,g,b);
+    return objStroke;
   }
 
   PVector getStroke() {
-    return stroke;
+    return objStroke;
   }
 
   /**
     * Disables the fill feature for this object
     */
   void setNoFill() {
-    fill = new PVector(-1,-1,-1);
+    objFill = new PVector(-1,-1,-1);
   }
 
   /**
     *  Stores the Black White value for use later
     */
   PVector setFill(int b_w) {
-    fill = new PVector(b_w,b_w,b_w);
-    return fill;
+    objFill = new PVector(b_w,b_w,b_w);
+    return objFill;
   }
 
   /**
     * Stores the RGB value for use later
     */
   PVector setFill(int r, int g, int b) {
-    fill = new PVector(r,g,b);
-    return fill;
+    objFill = new PVector(r,g,b);
+    return objFill;
   }
 
   PVector getFill() {
-    return this.fill;
+    return objFill;
   }
 
   /**
