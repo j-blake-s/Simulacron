@@ -16,3 +16,13 @@ public PVector negate(PVector vec) {
   return negate(vec,DEF_MASK);
 }
 
+public PVector rotateVector(PVector vec, PVector phi) {
+
+  PVector v2D_xy = new PVector(vec.x,vec.y);
+  v2D_xy.rotate(phi.x);
+  PVector v2D_xz = new PVector(v2D_xy.x,vec.z);
+  v2D_xz.rotate(phi.y);
+
+  return new PVector( v2D_xz.x, v2D_xy.y,v2D_xz.y );
+}
+

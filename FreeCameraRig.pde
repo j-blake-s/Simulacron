@@ -1,36 +1,35 @@
 public class FreeCameraRig extends CameraRig {
 
-  float F_SPEED = 20;
-  float LR_SPEED = 20;
-  float UP_SPEED = 5;
+  float F_SPEED = 30;
+  float LR_SPEED = 30;
+  float UP_SPEED = 20;
+  float UD_LOOK_SPEED = 0.05;
+  float LR_LOOK_SPEED = 0.1;
+  float ud_theta = 0;
+  float lr_theta = 0;
+  float CAM_RADIUS = 1;
 
   private final PVector DEF_UP = GLOBAL_DOWN;
-  private final PVector DEF_DIR = new PVector(0,0,1);
   private final PVector DEF_EYE = new PVector(0,0,0);
 
   
   // Default Constructor
   public FreeCameraRig() {
-    init(DEF_EYE,DEF_DIR,DEF_UP);
+    init(DEF_EYE,DEF_UP);
   }
 
   public FreeCameraRig(PVector eye_) {
-    init(eye_,DEF_DIR,DEF_UP);
-  }
-  
-  public FreeCameraRig(PVector eye_,PVector dir) {
-    init(eye_,dir,DEF_UP);
+    init(eye_,DEF_UP);
   }
 
-  public FreeCameraRig(PVector eye_,PVector dir, PVector up_) {
-    init(eye_,dir,up_);
+  public FreeCameraRig(PVector eye_, PVector up_) {
+    init(eye_,up_);
   }
 
-  void init(PVector eye_,PVector dir,PVector up_) {
+  void init(PVector eye_,PVector up_) {
 
-    PVector temp = PVector.add(eye_,dir.normalize());
     eye(eye_);
-    center(temp);
+    center(new PVector(eye_.x+CAM_RADIUS,eye_.y,eye_.z));
     up(up_);
 
     attach(new Camera());
@@ -45,89 +44,62 @@ public class FreeCameraRig extends CameraRig {
   // Implement abstract method from CameraRig
   public boolean move() {
     
-
-
     // WASD key presses
     int[] WASD = get_WASD();
     int WS = WASD[0] - WASD[2]; // -1 | 0 | 1
     int AD = WASD[1] - WASD[3]; // -1 | 0 | 1
 
-
-
-
-    // Get current values
-    PVector new_eye = eye();
-    PVector new_center = center();
-    PVector new_up = up();
+    // UP/DOWN key presses
+    int[] up_down_keys = {32,17};
+    int[] up_down = get_keys(up_down_keys);
+    int UD = up_down[0] - up_down[1];
 
     // Determine forward/backward movement
-    PVector forward = PVector.sub(new_center,new_eye);
+    PVector forward = PVector.sub(center(),eye());
     forward.normalize();
     forward.mult(F_SPEED);
 
-
-
     // Determing left/right movement
-    PVector left = new_up;
-    //left.normalize();
-    left = left.cross(forward);
+    PVector left = up().cross(forward);
     left.normalize();
     left.mult(LR_SPEED);
-
-
 
     // Multiply by key presses for direction
     forward.mult(WS);
     left.mult(AD);
 
-    // Accumalate changes
-    PVector change = PVector.add(forward,left);
-
     // Apply changes
-    new_eye.add(change);
-    new_center.add(change);
-
-    // Make changes
-    eye(new_eye);
-    center(new_center);
-    up(new_up);
-
-    int[] up_down_keys = {32,17};
-    int[] up_down = get_keys(up_down_keys);
-    int UD = up_down[0] - up_down[1];
-
-    PVector m_u = new PVector(0,UP_SPEED*UD,0);
-    eye(PVector.add(eye(),m_u));
-    center(PVector.add(center(),m_u));
-
+    PVector change = PVector.add(forward,left);
+    change.add(new PVector(0,UP_SPEED*UD,0));
+    eye(eye().add(change));
+    center(center().add(change));
+    
     change_view();
     return true;
   }
 
   public void change_view() {
-    // Fix the y position
     
-    float dir = 3;
-    
-    if (mouseX > pmouseX)
-      dir = -dir;
+    if(!mouse_is_dragged)
+      return;
+  
+    // Get mouse movement
+    PVector mouse_change = new PVector((pmouseX-mouseX)*LR_LOOK_SPEED, (pmouseY-mouseY)*UD_LOOK_SPEED);
 
-    if (!mouse_is_dragged)
-      dir = 0;
+    // Change camera angle based on mouse movement
+    ud_theta += mouse_change.y;
+    ud_theta = min(89,ud_theta);
+    ud_theta = max(-89,ud_theta);
+    lr_theta += mouse_change.x % 360;
 
-      
-    PVector distance = new PVector(mouseX-pmouseX,mouseY-pmouseY);
-    float amount = distance.mag(); // Should be big
-    PVector max_amount = new PVector(width,height);
-    distance.div(max_amount.mag());
+    // Find new position of camera center
+    float rad = CAM_RADIUS;
+    float y = sin(radians(ud_theta)) * rad;
+    rad = sqrt(sq(rad) - sq(y));
+    float x = cos(radians(lr_theta))*rad;
+    float z = sin(radians(lr_theta))*rad;
 
-    PVector diff = PVector.sub(center(),eye());
-    PVector diff2D = new PVector(diff.x,diff.z);
-    diff2D.rotate(dir*distance.mag());
-    diff = new PVector(diff2D.x,diff.y,diff2D.y);
-    center(PVector.add(eye(),diff));
-  }
-  public PVector add(PVector t,float a, float b, float c) {
-    return new PVector(t.x+a,t.y+b,t.z+c);
+    // Change camera center position
+    center(new PVector(x+e.x,y+e.y,z+e.z));
   }
 }

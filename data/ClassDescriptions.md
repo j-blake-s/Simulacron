@@ -52,7 +52,7 @@ __Camera.pde__ | _Class_
   >> * move() _Defines how the CameraRig moves each frame_
   >> * instructions() _Shows instructions for using the CameraRig to the screen._
 
-__FreeCameraRig.pde__ | _Class_ | extends *__CameraRig.pde__* | depends __Camera__
+__FreeCameraRig.pde__ | _Class_ | extends *__CameraRig.pde__* | depends on __Camera__ 
 
   > * Controlled via user input to give free range movement
   > * WASD for horizontal, SPACE + LFT CTRL for up/down, RT_MOUSE_BTN for looking left/right

@@ -1,3 +1,26 @@
+ public void drawCenterAxis() {
+    // (0,0,0)
+
+    int sphereRadius = 2;
+    int lineLength = 500;
+    noFill();
+
+    stroke(255,0,0); // RED
+    line(0,0,0,0,lineLength,0); // +Y-axis
+    
+    stroke(0,255,0); // GREEN
+    line(0,0,0,lineLength,0,0); // +X-axis
+ 
+    stroke(0,0,255); // BLUE
+    line(0,0,0,0,0,lineLength); // +Z-axis
+  
+    fill(255);
+    drawSphere(new PVector(0,lineLength,0),sphereRadius);
+    drawSphere(new PVector(lineLength,0,0),sphereRadius);
+    drawSphere(new PVector(0,0,lineLength),sphereRadius);
+  }
+
+
 /**
   * Draws a floor grid
   * @param floorHeight  - Y height of the grid
@@ -29,7 +52,7 @@ public void drawFloorGrid(int floorHeight, int floorSize, int gridDensity) {
   * @param ceiling    - Y height of the ceiling
   * @param floorSize  - Size of the base of the room
 */
-float DEF_ROOM_HEIGHT_ = 1500;
+float DEF_ROOM_HEIGHT_ = 3000;
 float DEF_ROOM_BASE = 6000;
 public void drawRoom(float height_, float base) {
 
