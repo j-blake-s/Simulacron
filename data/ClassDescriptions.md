@@ -55,8 +55,9 @@ __Camera.pde__ | _Class_
 __FreeCameraRig.pde__ | _Class_ | extends *__CameraRig.pde__* | depends on __Camera__ 
 
   > * Controlled via user input to give free range movement
-  > * WASD for horizontal, SPACE + LFT CTRL for up/down, RT_MOUSE_BTN for looking left/right
-
+  > * WASD for horizontal, SPACE + LFT CTRL for up/down
+  > * Drag mouse for looking around
+  
 ## Method Files
 
 *__graphics.pde__* | _Method File_
