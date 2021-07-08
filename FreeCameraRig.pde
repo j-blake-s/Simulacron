@@ -91,11 +91,13 @@ public class FreeCameraRig extends CameraRig {
     // Get mouse movement
     PVector mouse_change = new PVector((pmouseX-mouseX)*LR_LOOK_SPEED, (pmouseY-mouseY)*UD_LOOK_SPEED);
 
-    // Change camera angle based on mouse movement
-    ud_theta += mouse_change.y;
-    ud_theta = min(89,ud_theta);
-    ud_theta = max(-89,ud_theta);
-    lr_theta += mouse_change.x % 360;
+    if (mouse_change.mag() <= 20) {
+      // Change camera angle based on mouse movement
+      ud_theta += mouse_change.y;
+      ud_theta = min(89,ud_theta);
+      ud_theta = max(-89,ud_theta);
+      lr_theta += mouse_change.x % 360;
+    }
 
     // Find new position of camera center
     float rad = CAM_RADIUS;
