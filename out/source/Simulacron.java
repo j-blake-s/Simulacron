@@ -15,6 +15,13 @@ import java.io.IOException;
 public class Simulacron extends PApplet {
 
 Environment env;
+PObject obj;
+PVector[] path;
+int path_size = 1000;
+int count = 0;
+
+int clock = 0;
+
 
 public void setup() {
   
@@ -22,45 +29,65 @@ public void setup() {
   background(0);
   frameRate(60);
   env = new Environment();
+  HashMap<String,Object> settings = new HashMap<String,Object>();
+  settings.put("pos",new PVector(-100,200,200));
+  settings.put("vel",new PVector(3,1,-1));
+  obj = new PObject(settings);
+  path = new PVector[path_size];
+  for (int i = 0; i < path_size;++i) {
+    path[i] = null;
+  }
+
 }
 
 public void draw() {
+
   env.clear();
+
+  drawSphere(new PVector(0,500,0),10);
+  PVector diff = PVector.sub(new PVector(0,500,0),obj.get_pos());
+  diff.div(sq(diff.mag()));
+  diff.mult(8);
+
+
+  obj.add_force(diff);
+
+  if (clock % 3 == 0) {
+    PVector temp = new PVector(0,0,0);
+    temp.set(obj.get_pos());
+    path[count++] = temp;
+    count %= path_size;
+  }
+
+  fill(255,0,0);
+  noStroke();
+  for (int i = 0; i < path_size-1;++i) {
+    int from = (count + i) % path_size;
+    int to = (count + i + 1) % path_size;
+
+    stroke(255,0,0);
+    if (path[from] != null & path[to] != null) {
+      drawLine(path[from],path[to]);
+    }
+  }
+
+  obj.update();
+
+  
+
   drawFloorGrid(-1,-1,-1);
   drawRoom(-1,-1);
+
   env.film();
+  clock += 1;
+  clock %= 60;
+  
 }
 
 
 
 
 
-public class Ball implements Shape {
-
-  private final float RADIUS_LIMIT = 100;
-  private final float DEF_RADIUS = 20;
-  private float radius = DEF_RADIUS;
-
-  public Ball() {
- 
-  }
-
-  public Ball(float r) {
-    setRadius(r);
-  }
-
-  public float getRadius() {
-    return radius;
-  }
-
-  public void setRadius(float r) {
-    radius = (0 < r && r < RADIUS_LIMIT) ? r : radius;
-  }
-
-  public void draw(PVector pos) {
-    drawSphere(pos,radius);
-  }
-}
 /**
  *-> Faciliatates use of the camera function.
  *-> Keeps track of position, direction, and orientation.
@@ -324,6 +351,7 @@ public class FreeCameraRig extends CameraRig {
     //fill(255);
     //text("Hello",0,0);
   }
+
   // Implement abstract method from CameraRig
   public boolean move() {
     
@@ -333,30 +361,34 @@ public class FreeCameraRig extends CameraRig {
     int AD = WASD[1] - WASD[3]; // -1 | 0 | 1
 
     // UP/DOWN key presses
-    int[] up_down_keys = {32,17};
+    int[] up_down_keys = {32,17}; // Graphed to Space and Lft-Ctrl
     int[] up_down = get_keys(up_down_keys);
     int UD = up_down[0] - up_down[1];
 
     // Determine forward/backward movement
     PVector forward = PVector.sub(center(),eye());
     forward.normalize();
-    forward.mult(F_SPEED);
 
-    // Determing left/right movement
+    // Determine left/right movement
     PVector left = up().cross(forward);
     left.normalize();
-    left.mult(LR_SPEED);
+
+    // Determine up/down movement
+    PVector up = left.cross(forward);
+    up.normalize();
 
     // Multiply by key presses for direction
-    forward.mult(WS);
-    left.mult(AD);
+    forward.mult(WS*F_SPEED);
+    left.mult(AD*LR_SPEED);
+    up.mult(UD*UP_SPEED);
 
     // Apply changes
     PVector change = PVector.add(forward,left);
-    change.add(new PVector(0,UP_SPEED*UD,0));
+    change.add(up);
     eye(eye().add(change));
     center(center().add(change));
     
+    // Change direction camera is looking
     change_view();
     return true;
   }
@@ -386,178 +418,463 @@ public class FreeCameraRig extends CameraRig {
     center(new PVector(x+e.x,y+e.y,z+e.z));
   }
 }
-public class PObject extends PObjectBase {
+/** PObject
+  * The superclass of the physics engine. All objects will inherit from this.
+  */
+public class PObject {
+  // Variables
+    // Default
+    private Shape DEF_SHAPE = new Ball();
+    private Point DEF_POINT = new Point();
 
-  private final Shape DEF_SHAPE = new Ball();
-  private final PVector DEF_SPAWN = new PVector(0,0,0);
+    // Instance 
+    Shape shape = DEF_SHAPE;
+    Point point = DEF_POINT;
 
-  public PObject() {
-    init(null,null);
-  }
+  // Construction
 
-  public PObject(PVector posi) {
-    init(posi,null);
-  }
+    // Default
+    PObject(HashMap<String,Object> settings) {
+      init(settings);
+    }
 
-  public PObject(PVector posi, Shape shape) {
-    init(posi,shape);
-  }
+    // init Method
+    public void init(HashMap<String,Object> settings) {
+      set_pos((PVector)settings.get("pos"));
+      set_vel((PVector)settings.get("vel"));
+      set_acc((PVector)settings.get("acc"));
+      set_force((PVector)settings.get("force"));
+      
+      if (settings.containsKey("mass")) {
+        set_mass((float)settings.get("mass"));
+      }
 
+    }
 
-  private void init(PVector posi,Shape shape) {
-    this.pos = (posi != null) ? posi : DEF_SPAWN;
-    this.shape = (shape != null) ? shape : DEF_SHAPE;
-  }
+  // Adapter Methods
 
-  public PVector applyForce(PVector force) {
-    netForce.add(force);
-    return netForce;
-  }
+    public void update() {
+      this.point.update();
+      //this.shape.draw(point);
+    }
 
-  public void update() {
-    // F = ma -> a = F/m
-    acc = PVector.div(netForce,mass);
-    vel.add(acc);
-    pos.add(vel);
-    netForce = new PVector(0,0,0);
-  }
+    public void add_force(PVector in_force) {
+      this.point.add_force(in_force);
+    }
+    
 
-  public void draw() {
+  // Getters/Setters
+    // Point
+      // Pos
+      public PVector get_pos() {
+        return this.point.get_pos();
+      }
+      public void set_pos(PVector in_pos) {
+        this.point.set_pos(in_pos);
+      }
 
-    applyStroke(objStroke);
-    applyFill(objFill);
-    shape.draw(this.pos);
+      // Vel 
+      public PVector get_vel() {
+        return this.point.get_vel();
+      }
+      public void set_vel(PVector in_vel) {
+        this.point.set_vel(in_vel);
+      }
 
-  }  
+      // Acc
+      public PVector get_acc() {
+        return this.point.get_acc();
+      }
+      public void set_acc(PVector in_acc) {
+        this.point.set_acc(in_acc);
+      }
+
+      // Force
+      public PVector get_force() {
+        return this.point.get_force();
+      }
+      public void set_force(PVector in_force) {
+        this.point.set_force(in_force);
+      }
+
+      // Mass
+      public float get_mass() {
+        return this.point.get_mass();
+      }
+      public void set_mass(float in_mass) {
+        this.point.set_mass(in_mass);
+      }
 }
-public abstract class PObjectBase {
-
-  /**
-    * Shape
-    * Includes drawing method
-    * Gives info on the bounds of the shape
-    */
-  protected Shape shape = null;
-  protected PVector objStroke = new PVector(255,255,255);
-  protected PVector objFill = new PVector(255,255,255);
-
-  /**
-    * State
-    * Determines the state of the PObject and what it can do
-    */
-  protected State state = null;
-
-  // Physics Information
-  protected PVector pos;
-  protected PVector vel = new PVector(0,0,0);
-  protected PVector acc = new PVector(0,0,0);
-  protected PVector netForce = new PVector(0,0,0);
-  protected float mass = 1.0f;
+/** Point
+  * Tracks physical information as it relates to a "Point" in space.
+  * Forces applied to a Point cause it to move when updated.
+  */
+public class Point {
+  // Variables
+    // Default
+      private PVector DEF_POS = new PVector(0,0,0);
+      private PVector DEF_VEL = new PVector(0,0,0);
+      private PVector DEF_ACC = new PVector(0,0,0);
+      private PVector DEF_FORCE = new PVector(0,0,0);
+      private float DEF_MASS = 1;
+      private float MAX_MASS = 10000;
 
 
+    // Instance
+      PVector pos = DEF_POS;
+      PVector vel = DEF_VEL;
+      PVector acc = DEF_ACC;
+      PVector force = DEF_FORCE;
+      float   mass = DEF_MASS;
+
+  // Physics Methods
+    
+    /** Add Force
+      * Adds some force vector to the net force of this Point.
+      * @param PVector of force
+      */
+    public void add_force(PVector in_force) {
+      this.force.add(in_force);
+    }
+
+    /** Update
+      * Applies accumulated force onto this Point.
+      */
+    public void update() {
+
+      // A = F/m
+      acc.set(PVector.div(force,mass));
+
+      // V = dA
+      vel.add(acc);
+
+      // P = dV
+      pos.add(vel);
+
+      // Set net force to 0 for next frame
+      force.set(0,0,0);
+
+    }
+
+  // Technical Methods
+
+    /** Clone
+      * Creates a new Point with the same parameters as this Point.
+      * @returns The newly created Point.
+      */
+    public Point clone() {
+      return new Point(pos,vel,acc,force,mass);
+    }
+
+    /** Copy
+      * This Point copies another Point's parameters.
+      * @param Some Point object
+      */
+    public void copy(Point in_point) {
+      init(in_point.pos,in_point.vel,in_point.acc,in_point.force,in_point.mass);
+    }
+
+  // Construction
+
+    // Default Constructor
+    Point() {
+      init(null,null,null,null,-1);
+    }
+
+    // Shorthand Constructors
+    Point(PVector in_pos) {
+      init(in_pos,null,null,null,-1);
+    }
+
+    Point(PVector in_pos,float in_mass) {
+      init(in_pos,null,null,null,in_mass);
+    }
+
+    // Full Constructor
+    Point(PVector in_pos,PVector in_vel,PVector in_acc,PVector in_force,float in_mass) {
+      init(in_pos,in_vel,in_acc,in_force,in_mass);
+    }
+
+    // Init Method
+    private void init(PVector in_pos,PVector in_vel,PVector in_acc,PVector in_force,float in_mass) {
+      set_pos(in_pos);
+      set_vel(in_vel);
+      set_acc(in_acc);
+      set_force(in_force);
+      set_mass(in_mass);
+    }
+
+  // Getters/Setters
+
+    // Position
+      public PVector get_pos() {
+        return this.pos;
+      }
+      public void set_pos(PVector in_pos) {
+        this.pos = (in_pos==null) ?  this.pos : in_pos;
+      }
+
+    // Velocity
+      public PVector get_vel() {
+        return this.vel;
+      }
+      public void set_vel(PVector in_vel) {
+        this.vel = (in_vel==null) ? this.vel : in_vel;
+      }
 
 
-  /** 
-    * Disables the stroke feature for this object
-    */
-  public void setNoStroke() {
-    objStroke = new PVector(-1,-1,-1);
-  }
-  
-  /**
-    * Stores the Black White value for use later
-    */
-  public PVector setStroke(int b_w) {
-    objStroke = new PVector(b_w,b_w,b_w);
-    return objStroke;
-  }
-  
-  /**
-    * Stores the RGB value for use later
-    */
-  public PVector setStroke(int r, int g, int b) {
-    objStroke = new PVector(r,g,b);
-    return objStroke;
-  }
+    // Acceleration
+      public PVector get_acc() {
+        return this.acc;
+      }
 
-  public PVector getStroke() {
-    return objStroke;
-  }
+      public void set_acc(PVector in_acc) {
+        this.acc = (in_acc==null) ? this.acc : in_acc;
+      }
 
-  /**
-    * Disables the fill feature for this object
-    */
-  public void setNoFill() {
-    objFill = new PVector(-1,-1,-1);
-  }
+    // Force
+      public PVector get_force() {
+        return this.force;
+      }
+      public void set_force(PVector in_force) {
+        this.force = (in_force == null) ? this.force : in_force;
+      }
 
-  /**
-    *  Stores the Black White value for use later
-    */
-  public PVector setFill(int b_w) {
-    objFill = new PVector(b_w,b_w,b_w);
-    return objFill;
-  }
+    // Mass
+      public float get_mass() {
+        return this.mass;
+      }
+      public void set_mass(float in_mass) {
+        this.mass = (in_mass <= 0 || in_mass > MAX_MASS) ? this.mass : in_mass;
+      }
 
-  /**
-    * Stores the RGB value for use later
-    */
-  public PVector setFill(int r, int g, int b) {
-    objFill = new PVector(r,g,b);
-    return objFill;
-  }
-
-  public PVector getFill() {
-    return objFill;
-  }
-
-  /**
-    * Position
-    */
-  public PVector getPos() {
-    return this.pos;
-  }
-  public PVector setPos(PVector vector) {
-    this.pos = vector;
-    return this.pos;
-  }
-
-  /**
-    * Velocity
-    */
-  public PVector getVel() {
-    return this.vel;
-  }
-  public PVector setVel(PVector vector) {
-    this.vel = vector;
-    return this.vel;
-  }
-  
-  /**
-    * Acceleration
-    */
-  public PVector getAcc() {
-    return this.acc;
-  }
-  public PVector setAcc(PVector vector) {
-    this.acc = vector;
-    return this.acc;
-  }
-  
-  /**
-    * Mass
-    */
-  public float getMass() {
-    return this.mass;
-  }
-  public float setMass(float f) {
-    this.mass = f;
-    return this.mass;
-  }
 }
-public interface Shape {
-  public void draw(PVector pos);
+/** Shape
+  * Tracks graphical info
+  * Draws objects to screen
+  */
+public abstract class Shape {
+  // Variables
+    // Default
+    protected int[] DEF_STROKE = new int[]{255};
+    protected int[] DEF_FILL = new int[]{255};
+    protected float DEF_SIZE = 5;
+
+    // Instance
+    int[] stroke_info = DEF_STROKE;
+    int[] fill_info = DEF_FILL;
+    float size = DEF_SIZE;
+
+  // Abstract Methods
+    /** Make Shape
+      * Makes some shape around a given Point
+      * @param some Point in space
+      */
+    public abstract void make_shape(Point p);
+
+  // Functional Methods
+    
+    /** Draw
+      * Sets global stroke and fill, then makes shape around some Point
+      * @param some Point in space
+      */
+    public void draw(Point p) {
+      apply_fill();
+      apply_stroke();
+      make_shape(p);
+    }
+
+
+    /** Apply fill
+      * Sets the global fill to this Shapes fill info using the fill method
+      */
+    public void apply_fill() {
+      switch (fill_info.length) {
+
+        // Grayscale
+        case 1:
+          fill(fill_info[0]);
+          break;
+
+        // Grayscale w/ alpha
+        case 2:
+          fill(fill_info[0],fill_info[1]);
+          break;
+
+        // RGB
+        case 3:
+          fill(fill_info[0],fill_info[1],fill_info[2]);
+          break;
+
+        // RGB w/ alpha
+        case 4:
+          fill(fill_info[0],fill_info[1],fill_info[2],fill_info[3]);
+          break;
+
+        // No fill
+        default:
+          noFill();
+          break;
+      }
+    }
+
+    /** Apply Stroke
+      * Sets the global stroke to this Shapes stroke info using the stroke method
+      */
+    public void apply_stroke() {
+      switch (stroke_info.length) {
+
+        // Grayscale
+        case 1:
+          stroke(stroke_info[0]);
+          break;
+
+        // Grayscale w/ alpha
+        case 2:
+          stroke(stroke_info[0],stroke_info[1]);
+          break;
+
+        // RGB
+        case 3:
+          stroke(stroke_info[0],stroke_info[1],stroke_info[2]);
+          break;
+
+        // RGB w/ alpha
+        case 4:
+          stroke(stroke_info[0],stroke_info[1],stroke_info[2],stroke_info[3]);
+          break;
+
+        // No stroke
+        default:
+          noStroke();
+          break;
+      }
+    }
+
+    /** Clear
+      * Sets the stroke and fill to empty
+      */
+    public void clear() {
+      set_no_stroke();
+      set_no_fill();
+    }
+
+  // Technical Methods
+
+    /** Copy
+      * Copies the stroke and fill of another Shape
+      * @param some Shape
+      */
+    public void copy(Shape s) {
+      set_stroke(s.get_stroke());
+      set_fill(s.get_fill());
+    }
+
+  // Setting fill
+
+    // No fill
+    public void set_no_fill() {
+      this.fill_info = new int[]{};
+    }
+
+    // Copy fill
+    public void set_fill(int[] in_fill) {
+      this.fill_info = in_fill;
+    }
+
+    // Default fill
+    public void set_fill() {
+      this.fill_info = DEF_FILL;
+    }
+
+    // Grayscale
+    public void set_fill(int b_w) {
+      this.fill_info = new int[]{b_w};
+    }
+
+    // Grayscale w/ alpha
+    public void set_fill(int b_w,int alpha) {
+      this.fill_info = new int[]{b_w,alpha};
+    }
+
+    // RGB
+    public void set_fill(int r, int g, int b) {
+      this.fill_info = new int[]{r,g,b};
+    }
+
+    // RGB w/ alpha
+    public void set_fill(int r, int g, int b, int alpha) {
+      this.fill_info = new int[]{r,g,b,alpha};
+    }
+
+    // Get fill 
+    public int[] get_fill() {
+      return this.fill_info;
+    }
+
+
+  // Setting stroke
+    
+    // No stroke
+    public void set_no_stroke() {
+      this.stroke_info = new int[]{};
+    }
+
+    // Copy stroke
+    public void set_stroke(int[] in_stroke) {
+      this.stroke_info = in_stroke;
+    }
+
+    // Default stroke
+    public void set_stroke() {
+      this.stroke_info = DEF_STROKE;
+    }
+
+    // Grayscale
+    public void set_stroke(int b_w) {
+      this.stroke_info = new int[]{b_w};
+    }
+
+    // Grayscale w/ alpha
+    public void set_stroke(int b_w, int alpha) {
+      this.stroke_info = new int[]{b_w,alpha};
+    }
+
+    // RGB
+    public void set_stroke(int r, int g, int b) {
+      this.stroke_info = new int[]{r,g,b};
+    }
+
+    // RGB w/ alpha
+    public void set_stroke(int r, int g, int b, int alpha) {
+      this.stroke_info = new int[]{r,g,b,alpha};
+    }
+
+    // Get stroke 
+    public int[] get_stroke() {
+      return this.stroke_info;
+    }
+
+
+
+
+  // Getters/Setters
+    // Size
+    public void set_size(float in_size) {
+      this.size = in_size < 1 ? this.size : in_size;
+    }
+    public float get_size() {
+      return this.size;
+    }
 }
+public class Ball extends Shape {
+  Ball() {}
+  Ball(float in_size) { set_size(in_size); }
+  public void make_shape(Point p) { drawSphere(p.get_pos(),size); }
+}
+/** State
+  * The "State" of a PObject determines reactions to certain stimuli
+  */
 public interface State {
   
 }
@@ -592,7 +909,7 @@ public interface State {
   */
 int DEF_FLOOR_HEIGHT = 0;
 int DEF_FLOOR_SIZE = 3000;
-int DEF_GRID_DENSITY = 200;
+int DEF_GRID_DENSITY = 750;
 public void drawFloorGrid(int floorHeight, int floorSize, int gridDensity) {
 
   int fh = (floorHeight >= 0) ? floorHeight : DEF_FLOOR_HEIGHT;
@@ -667,19 +984,6 @@ public void drawSphere(PVector pos, float radius) {
   popMatrix();
 }
 
-public void applyFill(PVector f) {
-  if (f.x < 0 || f.y < 0 || f.z < 0)
-    noFill();
-  else
-    fill(f.x,f.y,f.z);
-}
-
-public void applyStroke(PVector s) {
-  if (s.x < 0 || s.y < 0 || s.z < 0)
-    noStroke();
-  else
-    stroke(s.x,s.y,s.z);
-}
 HashMap<Integer,Boolean> keys = new HashMap<Integer,Boolean>();
 boolean mouse_is_dragged = false;
 

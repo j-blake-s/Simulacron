@@ -41,6 +41,7 @@ public class FreeCameraRig extends CameraRig {
     //fill(255);
     //text("Hello",0,0);
   }
+
   // Implement abstract method from CameraRig
   public boolean move() {
     
@@ -50,30 +51,34 @@ public class FreeCameraRig extends CameraRig {
     int AD = WASD[1] - WASD[3]; // -1 | 0 | 1
 
     // UP/DOWN key presses
-    int[] up_down_keys = {32,17};
+    int[] up_down_keys = {32,17}; // Graphed to Space and Lft-Ctrl
     int[] up_down = get_keys(up_down_keys);
     int UD = up_down[0] - up_down[1];
 
     // Determine forward/backward movement
     PVector forward = PVector.sub(center(),eye());
     forward.normalize();
-    forward.mult(F_SPEED);
 
-    // Determing left/right movement
+    // Determine left/right movement
     PVector left = up().cross(forward);
     left.normalize();
-    left.mult(LR_SPEED);
+
+    // Determine up/down movement
+    PVector up = left.cross(forward);
+    up.normalize();
 
     // Multiply by key presses for direction
-    forward.mult(WS);
-    left.mult(AD);
+    forward.mult(WS*F_SPEED);
+    left.mult(AD*LR_SPEED);
+    up.mult(UD*UP_SPEED);
 
     // Apply changes
     PVector change = PVector.add(forward,left);
-    change.add(new PVector(0,UP_SPEED*UD,0));
+    change.add(up);
     eye(eye().add(change));
     center(center().add(change));
     
+    // Change direction camera is looking
     change_view();
     return true;
   }

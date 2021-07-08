@@ -1,44 +1,87 @@
-public class PObject extends PObjectBase {
+/** PObject
+  * The superclass of the physics engine. All objects will inherit from this.
+  */
+public class PObject {
+  // Variables
+    // Default
+    private Shape DEF_SHAPE = new Ball();
+    private Point DEF_POINT = new Point();
 
-  private final Shape DEF_SHAPE = new Ball();
-  private final PVector DEF_SPAWN = new PVector(0,0,0);
+    // Instance 
+    Shape shape = DEF_SHAPE;
+    Point point = DEF_POINT;
 
-  public PObject() {
-    init(null,null);
-  }
+  // Construction
 
-  public PObject(PVector posi) {
-    init(posi,null);
-  }
+    // Default
+    PObject(HashMap<String,Object> settings) {
+      init(settings);
+    }
 
-  public PObject(PVector posi, Shape shape) {
-    init(posi,shape);
-  }
+    // init Method
+    void init(HashMap<String,Object> settings) {
+      set_pos((PVector)settings.get("pos"));
+      set_vel((PVector)settings.get("vel"));
+      set_acc((PVector)settings.get("acc"));
+      set_force((PVector)settings.get("force"));
+      
+      if (settings.containsKey("mass")) {
+        set_mass((float)settings.get("mass"));
+      }
 
+    }
 
-  private void init(PVector posi,Shape shape) {
-    this.pos = (posi != null) ? posi : DEF_SPAWN;
-    this.shape = (shape != null) ? shape : DEF_SHAPE;
-  }
+  // Adapter Methods
 
-  public PVector applyForce(PVector force) {
-    netForce.add(force);
-    return netForce;
-  }
+    void update() {
+      this.point.update();
+      //this.shape.draw(point);
+    }
 
-  public void update() {
-    // F = ma -> a = F/m
-    acc = PVector.div(netForce,mass);
-    vel.add(acc);
-    pos.add(vel);
-    netForce = new PVector(0,0,0);
-  }
+    void add_force(PVector in_force) {
+      this.point.add_force(in_force);
+    }
+    
 
-  public void draw() {
+  // Getters/Setters
+    // Point
+      // Pos
+      PVector get_pos() {
+        return this.point.get_pos();
+      }
+      void set_pos(PVector in_pos) {
+        this.point.set_pos(in_pos);
+      }
 
-    applyStroke(objStroke);
-    applyFill(objFill);
-    shape.draw(this.pos);
+      // Vel 
+      PVector get_vel() {
+        return this.point.get_vel();
+      }
+      void set_vel(PVector in_vel) {
+        this.point.set_vel(in_vel);
+      }
 
-  }  
+      // Acc
+      PVector get_acc() {
+        return this.point.get_acc();
+      }
+      void set_acc(PVector in_acc) {
+        this.point.set_acc(in_acc);
+      }
+
+      // Force
+      PVector get_force() {
+        return this.point.get_force();
+      }
+      void set_force(PVector in_force) {
+        this.point.set_force(in_force);
+      }
+
+      // Mass
+      float get_mass() {
+        return this.point.get_mass();
+      }
+      void set_mass(float in_mass) {
+        this.point.set_mass(in_mass);
+      }
 }

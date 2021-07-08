@@ -29,7 +29,7 @@
   */
 int DEF_FLOOR_HEIGHT = 0;
 int DEF_FLOOR_SIZE = 3000;
-int DEF_GRID_DENSITY = 200;
+int DEF_GRID_DENSITY = 750;
 public void drawFloorGrid(int floorHeight, int floorSize, int gridDensity) {
 
   int fh = (floorHeight >= 0) ? floorHeight : DEF_FLOOR_HEIGHT;
