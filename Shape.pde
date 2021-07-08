@@ -7,7 +7,7 @@ public abstract class Shape {
     // Default
     protected int[] DEF_STROKE = new int[]{255};
     protected int[] DEF_FILL = new int[]{255};
-    protected float DEF_SIZE = 5;
+    protected float DEF_SIZE = 20;
 
     // Instance
     int[] stroke_info = DEF_STROKE;

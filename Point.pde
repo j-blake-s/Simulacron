@@ -26,7 +26,7 @@ public class Point {
       * Adds some force vector to the net force of this Point.
       * @param PVector of force
       */
-    void add_force(PVector in_force) {
+    void apply_force(PVector in_force) {
       this.force.add(in_force);
     }
 

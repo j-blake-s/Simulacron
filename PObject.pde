@@ -6,19 +6,33 @@ public class PObject {
     // Default
     private Shape DEF_SHAPE = new Ball();
     private Point DEF_POINT = new Point();
+    private int DEF_PATH_SIZE = 10;
 
     // Instance 
     Shape shape = DEF_SHAPE;
     Point point = DEF_POINT;
+    Clock time = new Clock();
+    PV
 
   // Construction
 
     // Default
+    PObject() {
+
+    }
+
+    // Shorthand
+    PObject(PVector in_pos) {
+      set_pos(in_pos);
+    }
+
+
+    // Full
     PObject(HashMap<String,Object> settings) {
       init(settings);
     }
 
-    // init Method
+    // Init Method
     void init(HashMap<String,Object> settings) {
       set_pos((PVector)settings.get("pos"));
       set_vel((PVector)settings.get("vel"));
@@ -28,18 +42,21 @@ public class PObject {
       if (settings.containsKey("mass")) {
         set_mass((float)settings.get("mass"));
       }
-
     }
 
   // Adapter Methods
 
-    void update() {
-      this.point.update();
-      //this.shape.draw(point);
+    void grow() {
+      this.time.tick();
     }
 
-    void add_force(PVector in_force) {
-      this.point.add_force(in_force);
+    void update() {
+      this.point.update();
+      this.shape.draw(point);
+    }
+
+    void apply_force(PVector in_force) {
+      this.point.apply_force(in_force);
     }
     
 
