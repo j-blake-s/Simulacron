@@ -60,6 +60,8 @@ public class System {
       if (index < system.size() && index >= 0) {
         return system.remove(index);
       }
+
+      return null;
     }
 
 

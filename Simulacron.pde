@@ -1,5 +1,6 @@
 Environment env;
-Clock time;
+
+PObject thing;
 
 
 void setup() {
@@ -8,24 +9,27 @@ void setup() {
   background(0);
   frameRate(60);
   env = new Environment();
-  time = new Clock();
+  thing = new PObject(new PVector(0,500,0));
   
 }
 
 void draw() {
-  start();
-  stop();
+  p0();
+  thing.apply_force(new PVector(0.005,0.01,0));
+  thing.update();
+  thing.track();
+  thing.draw_path();
+  p9();
 }
 
-void start() {
+void p0() {
   env.clear();
   drawFloorGrid(-1,-1,-1);
   drawRoom(-1,-1);
 }
 
-void stop() {
+void p9() {
   env.film();
-  time.tick();
 }
 
 

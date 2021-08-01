@@ -12,7 +12,8 @@ public class PObject {
     Shape shape = DEF_SHAPE;
     Point point = DEF_POINT;
     Clock time = new Clock();
-    PV
+    Path path = new Path(100);
+    
 
   // Construction
 
@@ -33,7 +34,7 @@ public class PObject {
     }
 
     // Init Method
-    void init(HashMap<String,Object> settings) {
+    private void init(HashMap<String,Object> settings) {
       set_pos((PVector)settings.get("pos"));
       set_vel((PVector)settings.get("vel"));
       set_acc((PVector)settings.get("acc"));
@@ -46,6 +47,19 @@ public class PObject {
 
   // Adapter Methods
 
+    // Path
+    void track() {
+      if (this.path != null)
+        path.track(this);
+    }
+
+    void draw_path() {
+      if (path != null)
+        path.draw();
+    }
+
+
+    // Clock
     void grow() {
       this.time.tick();
     }
@@ -59,8 +73,6 @@ public class PObject {
       this.point.apply_force(in_force);
     }
     
-
-  // Getters/Setters
     // Point
       // Pos
       PVector get_pos() {
